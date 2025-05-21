@@ -15,6 +15,7 @@ type ReportTypeService interface {
 	Index(ctx context.Context) ([]response.ReportTypeResponse, error)
 	Create(ctx context.Context, req *request.ReportTypeCreateRequest) (*response.ReportTypeResponse, error)
 	Update(ctx context.Context, req *request.ReportTypeCreateRequest, id int) (*response.ReportTypeResponse, error)
+	Delete(ctx context.Context, id int) error
 }
 
 type reportTypeService struct {
@@ -108,4 +109,20 @@ func (r *reportTypeService) Update(ctx context.Context, req *request.ReportTypeC
 	}
 
 	return &reportTypeResponse, nil
+}
+
+// Delete implements ReportTypeService.
+func (r *reportTypeService) Delete(ctx context.Context, id int) error {
+	// get report type by id
+	reportType, err := r.reportTypeRepo.FindByID(ctx, r.db, id)
+	if err != nil {
+		return errors.New("report type tidak ditemukan")
+	}
+
+	err = r.reportTypeRepo.Delete(ctx, r.db, reportType)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

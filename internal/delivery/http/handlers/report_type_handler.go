@@ -83,3 +83,20 @@ func (h *ReportTypeHandler) Update(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
 }
+
+func (h *ReportTypeHandler) Delete(c *fiber.Ctx) error {
+	// get id
+	idParams := c.Params("id")
+	// Convert string to int
+	id, err := strconv.Atoi(idParams)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user ID")
+	}
+
+	err = h.reportTypeService.Delete(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(id))
+}

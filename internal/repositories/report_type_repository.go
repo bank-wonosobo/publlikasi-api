@@ -10,7 +10,7 @@ import (
 type ReportTypeRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) (*entities.ReportType, error)
 	Update(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) (*entities.ReportType, error)
-	Delete()
+	Delete(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) error
 	FindAll(ctx context.Context, tx *gorm.DB) ([]entities.ReportType, error)
 	FindByID(ctx context.Context, tx *gorm.DB, id int) (*entities.ReportType, error)
 	FindByName(ctx context.Context, tx *gorm.DB, name string) (*entities.ReportType, error)
@@ -44,8 +44,13 @@ func (r *reportTypeRepository) Update(ctx context.Context, tx *gorm.DB, reportTy
 }
 
 // Delete implements ReportTypeRepository.
-func (r *reportTypeRepository) Delete() {
-	panic("unimplemented")
+func (r *reportTypeRepository) Delete(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) error {
+	err := tx.WithContext(ctx).Delete(&reportType).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FindAll implements ReportTypeRepository.
