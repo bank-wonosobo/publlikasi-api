@@ -18,4 +18,5 @@ func RegisterReportTypeRouter(router fiber.Router, service services.ReportTypeSe
 	admin := router.Group("admin/report-types")
 	admin.Get("/", handler.Index)
 	admin.Post("/", handler.Create)
+	admin.Put("/:id", handler.Update)
 }

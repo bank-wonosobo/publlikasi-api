@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strconv"
+
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
@@ -46,6 +48,35 @@ func (h *ReportTypeHandler) Create(c *fiber.Ctx) error {
 
 	// call service
 	result, err := h.reportTypeService.Create(c.Context(), &request)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
+func (h *ReportTypeHandler) Update(c *fiber.Ctx) error {
+	// get id
+	idParams := c.Params("id")
+	// Convert string to int
+	id, err := strconv.Atoi(idParams)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user ID")
+	}
+
+	var request request.ReportTypeCreateRequest
+	// parse request
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// validate request
+	if err := h.validator.Validate(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// call service
+	result, err := h.reportTypeService.Update(c.Context(), &request, id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
 	}

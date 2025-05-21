@@ -14,6 +14,7 @@ import (
 type ReportTypeService interface {
 	Index(ctx context.Context) ([]response.ReportTypeResponse, error)
 	Create(ctx context.Context, req *request.ReportTypeCreateRequest) (*response.ReportTypeResponse, error)
+	Update(ctx context.Context, req *request.ReportTypeCreateRequest, id int) (*response.ReportTypeResponse, error)
 }
 
 type reportTypeService struct {
@@ -65,6 +66,34 @@ func (r *reportTypeService) Create(ctx context.Context, req *request.ReportTypeC
 		Description: req.Description,
 	}
 	result, err := r.reportTypeRepo.Save(ctx, r.db, &reportType)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	reportTypeResponse := response.ReportTypeResponse{
+		ID:          result.ID,
+		Name:        result.Name,
+		Description: result.Description,
+		CreatedAt:   result.CreatedAt.String(),
+		UpdatedAt:   result.UpdatedAt.String(),
+	}
+
+	return &reportTypeResponse, nil
+}
+
+// Update implements ReportTypeService.
+func (r *reportTypeService) Update(ctx context.Context, req *request.ReportTypeCreateRequest, id int) (*response.ReportTypeResponse, error) {
+	// get report type by id
+	reportType, err := r.reportTypeRepo.FindByID(ctx, r.db, id)
+	if err != nil {
+		return nil, errors.New("report type tidak ditemukan")
+	}
+
+	// update report type
+	reportType.Name = req.Name
+	reportType.Description = req.Description
+	result, err := r.reportTypeRepo.Update(ctx, r.db, reportType)
 	if err != nil {
 		return nil, err
 	}
