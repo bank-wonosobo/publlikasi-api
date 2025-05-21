@@ -20,6 +20,16 @@ func NewReportType(reportTypeService services.ReportTypeService, validator valid
 	}
 }
 
+func (h *ReportTypeHandler) Index(c *fiber.Ctx) error {
+	// call service
+	result, err := h.reportTypeService.Index(c.Context())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
 // create handler
 func (h *ReportTypeHandler) Create(c *fiber.Ctx) error {
 	var request request.ReportTypeCreateRequest

@@ -12,7 +12,7 @@ import (
 )
 
 type ReportTypeService interface {
-	Index(ctx context.Context) (*response.ReportTypeResponse, error)
+	Index(ctx context.Context) ([]response.ReportTypeResponse, error)
 	Create(ctx context.Context, req *request.ReportTypeCreateRequest) (*response.ReportTypeResponse, error)
 }
 
@@ -30,8 +30,26 @@ func NewReportType(db *gorm.DB,
 }
 
 // Index implements ReportTypeService.
-func (r *reportTypeService) Index(ctx context.Context) (*response.ReportTypeResponse, error) {
-	panic("unimplemented")
+func (r *reportTypeService) Index(ctx context.Context) ([]response.ReportTypeResponse, error) {
+	// get all
+	result, err := r.reportTypeRepo.FindAll(ctx, r.db)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	var reportTypeResponse []response.ReportTypeResponse
+	for _, reportType := range result {
+		reportTypeResponse = append(reportTypeResponse, response.ReportTypeResponse{
+			ID:          reportType.ID,
+			Name:        reportType.Name,
+			Description: reportType.Description,
+			CreatedAt:   reportType.CreatedAt.String(),
+			UpdatedAt:   reportType.UpdatedAt.String(),
+		})
+	}
+
+	return reportTypeResponse, nil
 }
 
 // Create implements ReportTypeService.

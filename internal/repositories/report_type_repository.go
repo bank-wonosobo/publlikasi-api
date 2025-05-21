@@ -11,7 +11,7 @@ type ReportTypeRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) (*entities.ReportType, error)
 	Update()
 	Delete()
-	FindAll()
+	FindAll(ctx context.Context, tx *gorm.DB) ([]entities.ReportType, error)
 	FindByID()
 	FindByName(ctx context.Context, tx *gorm.DB, name string) (*entities.ReportType, error)
 }
@@ -39,8 +39,13 @@ func (r *reportTypeRepository) Delete() {
 }
 
 // FindAll implements ReportTypeRepository.
-func (r *reportTypeRepository) FindAll() {
-	panic("unimplemented")
+func (r *reportTypeRepository) FindAll(ctx context.Context, tx *gorm.DB) (result []entities.ReportType, err error) {
+	err = tx.WithContext(ctx).Find(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // FindByID implements ReportTypeRepository.
