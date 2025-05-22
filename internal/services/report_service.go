@@ -18,6 +18,7 @@ type ReportService interface {
 	Create(ctx context.Context, req *request.ReportCreateRequest) (*response.ReportResponse, error)
 	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error)
 	Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error)
+	Delete(ctx context.Context, id string) error
 	Upprove(ctx context.Context, id string) (*response.ReportResponse, error)
 	Archive(ctx context.Context, id string) (*response.ReportResponse, error)
 }
@@ -232,6 +233,22 @@ func (r *reportService) Update(ctx context.Context, req *request.ReportUpdateReq
 	}
 
 	return &reportResponse, nil
+}
+
+// Delete implements ReportService.
+func (r *reportService) Delete(ctx context.Context, id string) error {
+	// get report type by id
+	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	if err != nil {
+		return errors.New("report tidak ditemukan")
+	}
+
+	err = r.reportRepo.Delete(ctx, r.db, report)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Archive implements ReportService.

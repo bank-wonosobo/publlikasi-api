@@ -12,7 +12,7 @@ type ReportRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
 	GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offside int) ([]entities.Report, int64, error)
 	Update(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
-	Delete()
+	Delete(ctx context.Context, tx *gorm.DB, report *entities.Report) error
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Report, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.Report, error)
 }
@@ -70,11 +70,6 @@ func (r *reportRepository) Update(ctx context.Context, tx *gorm.DB, report *enti
 	return report, nil
 }
 
-// Delete implements ReportRepository.
-func (r *reportRepository) Delete() {
-	panic("unimplemented")
-}
-
 // FindByID implements ReportRepository.
 func (r *reportRepository) FindByID(ctx context.Context, tx *gorm.DB, id string) (result *entities.Report, err error) {
 	err = tx.WithContext(ctx).Preload("ReportType").Where("id = ?", id).First(&result).Error
@@ -93,4 +88,14 @@ func (r *reportRepository) FindByTitle(ctx context.Context, tx *gorm.DB, title s
 	}
 
 	return result, nil
+}
+
+// Delete implements ReportRepository.
+func (r *reportRepository) Delete(ctx context.Context, tx *gorm.DB, report *entities.Report) error {
+	err := tx.WithContext(ctx).Delete(&report).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
