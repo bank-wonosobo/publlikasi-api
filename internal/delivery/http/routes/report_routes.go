@@ -19,4 +19,5 @@ func RegisterReportRouter(router fiber.Router, service services.ReportService, v
 	admin.Get("/", handler.Index)
 	admin.Post("/", handler.Create)
 	admin.Post("/:id/file", handler.UploadFile)
+	admin.Put("/:id", handler.Update)
 }

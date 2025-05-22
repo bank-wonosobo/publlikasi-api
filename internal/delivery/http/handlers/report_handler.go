@@ -76,3 +76,25 @@ func (h *ReportHandler) UploadFile(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
 }
+
+func (h *ReportHandler) Update(c *fiber.Ctx) error {
+	var request request.ReportUpdateRequest
+	id := c.Params("id")
+	// parse request
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// validate request
+	if err := h.validator.Validate(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// call service
+	result, err := h.reportService.Update(c.Context(), &request, id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}

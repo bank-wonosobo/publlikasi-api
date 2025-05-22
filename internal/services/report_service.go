@@ -17,6 +17,9 @@ type ReportService interface {
 	Index(ctx context.Context, params *request.ReportGetQueryParams) (*response.ReportPaginateResponse, error)
 	Create(ctx context.Context, req *request.ReportCreateRequest) (*response.ReportResponse, error)
 	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error)
+	Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error)
+	Upprove(ctx context.Context, id string) (*response.ReportResponse, error)
+	Archive(ctx context.Context, id string) (*response.ReportResponse, error)
 }
 
 type reportService struct {
@@ -180,4 +183,63 @@ func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHead
 		ReportType:  result.ReportType.Name,
 	}
 	return &reportResponse, nil
+}
+
+// Update implements ReportService.
+func (r *reportService) Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error) {
+	// get report type by id
+	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// check report type id
+	reportType, err := r.reportTypeRepo.FindByName(ctx, r.db, req.ReportType)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("report type tidak ditemukan")
+	}
+
+	// update report type
+	report.Title = req.Title
+	report.Description = req.Description
+	report.PeriodStart = req.PeriodStart
+	report.PeriodEnd = req.PeriodEnd
+	report.Quarter = req.Quarter
+	report.Year = req.Year
+	report.Version = req.Version
+	report.ReportType = *reportType
+	report.Status = entities.Status(req.Status)
+
+	result, err := r.reportRepo.Update(ctx, r.db, report)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	reportResponse := response.ReportResponse{
+		ID:          result.ID,
+		Title:       result.Title,
+		Description: result.Description,
+		PeriodStart: result.PeriodStart,
+		PeriodEnd:   result.PeriodEnd,
+		Year:        result.Year,
+		Quarter:     result.Quarter,
+		Version:     result.Version,
+		Status:      string(result.Status),
+		UploadBy:    result.UploadBy,
+		ApprovedBy:  result.ApprovedBy,
+		ReportType:  result.ReportType.Name,
+	}
+
+	return &reportResponse, nil
+}
+
+// Archive implements ReportService.
+func (r *reportService) Archive(ctx context.Context, id string) (*response.ReportResponse, error) {
+	panic("unimplemented")
+}
+
+// Upprove implements ReportService.
+func (r *reportService) Upprove(ctx context.Context, id string) (*response.ReportResponse, error) {
+	panic("unimplemented")
 }
