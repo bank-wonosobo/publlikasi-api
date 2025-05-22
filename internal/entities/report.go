@@ -23,7 +23,7 @@ type Report struct {
 	PeriodEnd    time.Time
 	Year         int
 	Quarter      *int
-	FileUrl      string
+	FileUrl      *string
 	Version      string
 	Status       Status
 	UploadBy     string

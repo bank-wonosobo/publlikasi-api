@@ -9,3 +9,10 @@ database:
   password: "postgres"
   name: "publication_db"
   tz: "Asia/Jakarta"
+
+s3:
+  bucketName: storage-main
+  region: us-east-1
+  endpoint: https://is3.cloudhost.id
+  accessKey: 6QAX2YLNIIQVYWV4TJSN
+  secretKey: qpCP9Bt9INlDMlLZbdpLgPYuoqBHJRV5GmKPvQ58

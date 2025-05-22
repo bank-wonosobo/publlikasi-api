@@ -22,6 +22,14 @@ type Config struct {
 		Name     string `mapstructure:"name"`
 		Tz       string `mapstructure:"tz"`
 	} `mapstructure:"database"`
+
+	S3 struct {
+		BucketName string `mapstructure:"bucketName"`
+		Region     string `mapstructure:"region"`
+		Endpoint   string `mapstructure:"endpoint"`
+		AccessKey  string `mapstructure:"accessKey"`
+		SecretKey  string `mapstructure:"secretKey"`
+	}
 }
 
 func LoadConfig() (*Config, error) {
