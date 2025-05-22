@@ -14,6 +14,7 @@ import (
 )
 
 type ReportService interface {
+	Index(ctx context.Context, params *request.ReportGetQueryParams) (*response.ReportPaginateResponse, error)
 	Create(ctx context.Context, req *request.ReportCreateRequest) (*response.ReportResponse, error)
 	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error)
 }
@@ -36,6 +37,56 @@ func NewReport(db *gorm.DB,
 		reportTypeRepo: reportTypeRepo,
 		s3:             s3,
 	}
+}
+
+// Index implements ReportService.
+func (r *reportService) Index(ctx context.Context, params *request.ReportGetQueryParams) (*response.ReportPaginateResponse, error) {
+	// Set default values
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 10
+	}
+
+	// set offset
+	offset := (params.Page - 1) * params.Limit
+
+	// get all data with total
+	result, total, err := r.reportRepo.GetAll(ctx, r.db, params, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	var reportResponse []response.ReportResponse
+	for _, report := range result {
+		reportResponse = append(reportResponse, response.ReportResponse{
+			ID:          report.ID,
+			Title:       report.Title,
+			Description: report.Description,
+			PeriodStart: report.PeriodStart,
+			PeriodEnd:   report.PeriodEnd,
+			Year:        report.Year,
+			Quarter:     report.Quarter,
+			Version:     report.Version,
+			Status:      string(report.Status),
+			UploadBy:    report.UploadBy,
+			ApprovedBy:  report.ApprovedBy,
+			ReportType:  report.ReportType.Name,
+		})
+	}
+
+	reportPaginateResponse := response.ReportPaginateResponse{
+		Reports:   reportResponse,
+		Page:      params.Page,
+		Limit:     params.Limit,
+		Total:     total,
+		TotalPage: (total + int64(params.Limit) - 1) / int64(params.Limit),
+	}
+
+	return &reportPaginateResponse, nil
+
 }
 
 // Create implements ReportService.

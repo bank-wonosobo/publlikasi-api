@@ -12,10 +12,11 @@ func RegisterReportRouter(router fiber.Router, service services.ReportService, v
 
 	// public routes
 	report := router.Group("reports")
-	report.Get("/test", handler.Create)
+	report.Get("/", handler.Index)
 
 	// admin routes
 	admin := router.Group("admin/reports")
+	admin.Get("/", handler.Index)
 	admin.Post("/", handler.Create)
 	admin.Post("/:id/file", handler.UploadFile)
 }

@@ -20,6 +20,22 @@ func NewReport(reportService services.ReportService, validator validator.Validat
 	}
 }
 
+func (h *ReportHandler) Index(c *fiber.Ctx) error {
+	// parse params
+	var params request.ReportGetQueryParams
+	if err := c.QueryParser(&params); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// call service
+	result, err := h.reportService.Index(c.Context(), &params)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
 func (h *ReportHandler) Create(c *fiber.Ctx) error {
 	var request request.ReportCreateRequest
 

@@ -12,3 +12,11 @@ type ReportCreateRequest struct {
 	Version     string    `json:"version" validate:"required"`
 	ReportType  string    `json:"report_type" validate:"required"`
 }
+
+type ReportGetQueryParams struct {
+	Title       string `query:"title"`
+	Description string `query:"description"`
+	Year        int    `query:"year"`
+	Page        int    `query:"page"`
+	Limit       int    `query:"limit"`
+}

@@ -3,13 +3,14 @@ package repositories
 import (
 	"context"
 
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"gorm.io/gorm"
 )
 
 type ReportRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
-	GetAll()
+	GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offside int) ([]entities.Report, int64, error)
 	Update(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
 	Delete()
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Report, error)
@@ -23,6 +24,32 @@ func NewReport() ReportRepository {
 	return &reportRepository{}
 }
 
+// GetAll implements ReportRepository.
+func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offside int) (result []entities.Report, total int64, err error) {
+	query := tx.Model(&entities.Report{})
+
+	if params.Title != "" {
+		query = query.Where("title ILIKE ?", "%"+params.Title+"%")
+	}
+
+	if params.Description != "" {
+		query = query.Where("description ILIKE ?", "%"+params.Description+"%")
+	}
+
+	if params.Year != 0 {
+		query = query.Where("year = ?", params.Year)
+	}
+
+	query.Count(&total)
+
+	err = query.Preload("ReportType").Limit(params.Limit).Offset(offside).Find(&result).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, total, nil
+}
+
 // Save implements ReportRepository.
 func (r *reportRepository) Save(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error) {
 	err := tx.WithContext(ctx).Preload("ReportTypes").Create(&report).Error
@@ -31,11 +58,6 @@ func (r *reportRepository) Save(ctx context.Context, tx *gorm.DB, report *entiti
 	}
 
 	return report, nil
-}
-
-// GetAll implements ReportRepository.
-func (r *reportRepository) GetAll() {
-	panic("unimplemented")
 }
 
 // Update implements ReportRepository.

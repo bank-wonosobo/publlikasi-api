@@ -17,3 +17,11 @@ type ReportResponse struct {
 	ApprovedBy  *string   `json:"approved_by"`
 	ReportType  string    `json:"report_type"`
 }
+
+type ReportPaginateResponse struct {
+	Reports   []ReportResponse `json:"reports"`
+	Page      int              `json:"page"`
+	Limit     int              `json:"limit"`
+	Total     int64            `json:"total"`
+	TotalPage int64            `json:"total_page"`
+}
