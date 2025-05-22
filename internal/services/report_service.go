@@ -19,7 +19,7 @@ type ReportService interface {
 	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error)
 	Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error)
 	Delete(ctx context.Context, id string) error
-	Upprove(ctx context.Context, id string) (*response.ReportResponse, error)
+	Approve(ctx context.Context, id string) (*response.ReportResponse, error)
 	Archive(ctx context.Context, id string) (*response.ReportResponse, error)
 }
 
@@ -178,7 +178,7 @@ func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHead
 		Quarter:     result.Quarter,
 		Version:     result.Version,
 		Status:      string(result.Status),
-		FileUrl:     fileUrl,
+		FileUrl:     &fileUrl,
 		UploadBy:    result.UploadBy,
 		ApprovedBy:  result.ApprovedBy,
 		ReportType:  result.ReportType.Name,
@@ -253,10 +253,68 @@ func (r *reportService) Delete(ctx context.Context, id string) error {
 
 // Archive implements ReportService.
 func (r *reportService) Archive(ctx context.Context, id string) (*response.ReportResponse, error) {
-	panic("unimplemented")
+	// get report type by id
+	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	if err != nil {
+		return nil, errors.New("report tidak ditemukan")
+	}
+
+	// update report
+	report.Status = entities.Archived
+	result, err := r.reportRepo.Update(ctx, r.db, report)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	reportResponse := response.ReportResponse{
+		ID:          result.ID,
+		Title:       result.Title,
+		Description: result.Description,
+		PeriodStart: result.PeriodStart,
+		PeriodEnd:   result.PeriodEnd,
+		Year:        result.Year,
+		Quarter:     result.Quarter,
+		Version:     result.Version,
+		Status:      string(result.Status),
+		FileUrl:     result.FileUrl,
+		UploadBy:    result.UploadBy,
+		ApprovedBy:  result.ApprovedBy,
+		ReportType:  result.ReportType.Name,
+	}
+	return &reportResponse, nil
 }
 
 // Upprove implements ReportService.
-func (r *reportService) Upprove(ctx context.Context, id string) (*response.ReportResponse, error) {
-	panic("unimplemented")
+func (r *reportService) Approve(ctx context.Context, id string) (*response.ReportResponse, error) {
+	// get report type by id
+	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	if err != nil {
+		return nil, errors.New("report tidak ditemukan")
+	}
+
+	// update report
+	report.Status = entities.Published
+	result, err := r.reportRepo.Update(ctx, r.db, report)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	reportResponse := response.ReportResponse{
+		ID:          result.ID,
+		Title:       result.Title,
+		Description: result.Description,
+		PeriodStart: result.PeriodStart,
+		PeriodEnd:   result.PeriodEnd,
+		Year:        result.Year,
+		Quarter:     result.Quarter,
+		Version:     result.Version,
+		Status:      string(result.Status),
+		FileUrl:     result.FileUrl,
+		UploadBy:    result.UploadBy,
+		ApprovedBy:  result.ApprovedBy,
+		ReportType:  result.ReportType.Name,
+	}
+	return &reportResponse, nil
 }

@@ -110,3 +110,29 @@ func (h *ReportHandler) Delete(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(id))
 }
+
+func (h *ReportHandler) Approve(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.reportService.Approve(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
+func (h *ReportHandler) Archive(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.reportService.Archive(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}

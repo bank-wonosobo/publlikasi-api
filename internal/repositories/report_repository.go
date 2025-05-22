@@ -62,7 +62,7 @@ func (r *reportRepository) Save(ctx context.Context, tx *gorm.DB, report *entiti
 
 // Update implements ReportRepository.
 func (r *reportRepository) Update(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error) {
-	err := tx.WithContext(ctx).Save(&report).Error
+	err := tx.WithContext(ctx).Preload("ReportType").Save(&report).Error
 	if err != nil {
 		return nil, err
 	}
