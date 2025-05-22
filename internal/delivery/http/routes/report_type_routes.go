@@ -11,8 +11,9 @@ import (
 func RegisterReportTypeRouter(router fiber.Router, service services.ReportTypeService, validator validator.Validator) {
 	handler := handlers.NewReportType(service, validator)
 
+	// public routes
 	reportTypes := router.Group("report-types")
-	reportTypes.Post("/tes", handler.Create)
+	reportTypes.Get("/", handler.Index)
 
 	// admin routes
 	admin := router.Group("admin/report-types")

@@ -45,9 +45,11 @@ func main() {
 
 	// init repo
 	reportTypeRepo := repositories.NewReportType()
+	reportRepo := repositories.NewReport()
 
 	// init service
 	reportTypeService := services.NewReportType(db, reportTypeRepo)
+	reportService := services.NewReport(db, reportRepo, reportTypeRepo)
 
 	// validator
 	validator := validator.NewValidator()
@@ -60,6 +62,7 @@ func main() {
 	// init router
 	defaultRoute(app)
 	routes.RegisterReportTypeRouter(v1, reportTypeService, validator)
+	routes.RegisterReportRouter(v1, reportService, validator)
 
 	// make server
 	log.Printf("Server running on port %s", cfg.App.Port)

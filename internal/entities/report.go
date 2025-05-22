@@ -1,6 +1,11 @@
 package entities
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type Status string
 
@@ -25,4 +30,10 @@ type Report struct {
 	ApprovedBy   *string
 	ReportTypeID uint
 	ReportType   ReportType
+}
+
+// BeforeCreate hook to set UUID
+func (r *Report) BeforeCreate(tx *gorm.DB) (err error) {
+	r.ID = uuid.NewString()
+	return nil
 }
