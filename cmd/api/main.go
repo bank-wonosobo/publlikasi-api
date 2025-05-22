@@ -9,6 +9,7 @@ import (
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/repositories"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/database"
+	"github.com/bank-wonosobo/publlikasi-api.git/pkg/storage"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -27,6 +28,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
+
+	// init s3
+	s3Storage := storage.NewS3Storage(
+		cfg.S3.BucketName,
+		cfg.S3.Region,
+		cfg.S3.Endpoint,
+		cfg.S3.AccessKey,
+		cfg.S3.SecretKey,
+	)
 
 	// auto migrate entity
 	if err := db.AutoMigrate(entities.ReportType{}, entities.Report{}); err != nil {
@@ -49,7 +59,7 @@ func main() {
 
 	// init service
 	reportTypeService := services.NewReportType(db, reportTypeRepo)
-	reportService := services.NewReport(db, reportRepo, reportTypeRepo)
+	reportService := services.NewReport(db, reportRepo, reportTypeRepo, s3Storage)
 
 	// validator
 	validator := validator.NewValidator()
