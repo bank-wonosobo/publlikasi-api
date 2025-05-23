@@ -1,0 +1,12 @@
+# Environment variables
+deployment/.env
+
+# Data directories
+!data/.gitkeep
+
+# Logs
+*.log
+
+# System Files
+.DS_Store
+Thumbs.db
