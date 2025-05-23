@@ -1,6 +1,6 @@
 app:
   name: "Publication API Development"
-  port: 8001
+  port: 8080
 
 database:
   host: localhost
