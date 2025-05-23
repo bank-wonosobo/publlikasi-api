@@ -64,23 +64,7 @@ func (r *reportService) Index(ctx context.Context, params *request.ReportGetQuer
 	}
 
 	// return result
-	var reportResponse []response.ReportResponse
-	for _, report := range result {
-		reportResponse = append(reportResponse, response.ReportResponse{
-			ID:          report.ID,
-			Title:       report.Title,
-			Description: report.Description,
-			PeriodStart: report.PeriodStart,
-			PeriodEnd:   report.PeriodEnd,
-			Year:        report.Year,
-			Quarter:     report.Quarter,
-			Version:     report.Version,
-			Status:      string(report.Status),
-			UploadBy:    report.UploadBy,
-			ApprovedBy:  report.ApprovedBy,
-			ReportType:  report.ReportType.Name,
-		})
-	}
+	reportResponse := toReportResponses(result)
 
 	reportPaginateResponse := response.ReportPaginateResponse{
 		Reports:   reportResponse,
@@ -126,20 +110,7 @@ func (r *reportService) Create(ctx context.Context, req *request.ReportCreateReq
 	}
 
 	// return result
-	reportResponse := response.ReportResponse{
-		ID:          result.ID,
-		Title:       result.Title,
-		Description: result.Description,
-		PeriodStart: result.PeriodStart,
-		PeriodEnd:   result.PeriodEnd,
-		Year:        result.Year,
-		Quarter:     result.Quarter,
-		Version:     result.Version,
-		Status:      string(result.Status),
-		UploadBy:    result.UploadBy,
-		ApprovedBy:  result.ApprovedBy,
-		ReportType:  result.ReportType.Name,
-	}
+	reportResponse := toReportResponse(*result)
 	return &reportResponse, nil
 }
 
@@ -169,21 +140,7 @@ func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHead
 	}
 
 	// return result
-	reportResponse := response.ReportResponse{
-		ID:          result.ID,
-		Title:       result.Title,
-		Description: result.Description,
-		PeriodStart: result.PeriodStart,
-		PeriodEnd:   result.PeriodEnd,
-		Year:        result.Year,
-		Quarter:     result.Quarter,
-		Version:     result.Version,
-		Status:      string(result.Status),
-		FileUrl:     &fileUrl,
-		UploadBy:    result.UploadBy,
-		ApprovedBy:  result.ApprovedBy,
-		ReportType:  result.ReportType.Name,
-	}
+	reportResponse := toReportResponse(*result)
 	return &reportResponse, nil
 }
 
@@ -218,21 +175,7 @@ func (r *reportService) Update(ctx context.Context, req *request.ReportUpdateReq
 	}
 
 	// return result
-	reportResponse := response.ReportResponse{
-		ID:          result.ID,
-		Title:       result.Title,
-		Description: result.Description,
-		PeriodStart: result.PeriodStart,
-		PeriodEnd:   result.PeriodEnd,
-		Year:        result.Year,
-		Quarter:     result.Quarter,
-		Version:     result.Version,
-		Status:      string(result.Status),
-		UploadBy:    result.UploadBy,
-		ApprovedBy:  result.ApprovedBy,
-		ReportType:  result.ReportType.Name,
-	}
-
+	reportResponse := toReportResponse(*result)
 	return &reportResponse, nil
 }
 
@@ -268,21 +211,7 @@ func (r *reportService) Archive(ctx context.Context, id string) (*response.Repor
 	}
 
 	// return result
-	reportResponse := response.ReportResponse{
-		ID:          result.ID,
-		Title:       result.Title,
-		Description: result.Description,
-		PeriodStart: result.PeriodStart,
-		PeriodEnd:   result.PeriodEnd,
-		Year:        result.Year,
-		Quarter:     result.Quarter,
-		Version:     result.Version,
-		Status:      string(result.Status),
-		FileUrl:     result.FileUrl,
-		UploadBy:    result.UploadBy,
-		ApprovedBy:  result.ApprovedBy,
-		ReportType:  result.ReportType.Name,
-	}
+	reportResponse := toReportResponse(*result)
 	return &reportResponse, nil
 }
 
@@ -302,21 +231,7 @@ func (r *reportService) Approve(ctx context.Context, id string) (*response.Repor
 	}
 
 	// return result
-	reportResponse := response.ReportResponse{
-		ID:          result.ID,
-		Title:       result.Title,
-		Description: result.Description,
-		PeriodStart: result.PeriodStart,
-		PeriodEnd:   result.PeriodEnd,
-		Year:        result.Year,
-		Quarter:     result.Quarter,
-		Version:     result.Version,
-		Status:      string(result.Status),
-		FileUrl:     result.FileUrl,
-		UploadBy:    result.UploadBy,
-		ApprovedBy:  result.ApprovedBy,
-		ReportType:  result.ReportType.Name,
-	}
+	reportResponse := toReportResponse(*result)
 	return &reportResponse, nil
 }
 
@@ -340,23 +255,7 @@ func (r *reportService) GetByReportType(ctx context.Context, params *request.Rep
 	}
 
 	// return result
-	var reportResponse []response.ReportResponse
-	for _, report := range result {
-		reportResponse = append(reportResponse, response.ReportResponse{
-			ID:          report.ID,
-			Title:       report.Title,
-			Description: report.Description,
-			PeriodStart: report.PeriodStart,
-			PeriodEnd:   report.PeriodEnd,
-			Year:        report.Year,
-			Quarter:     report.Quarter,
-			Version:     report.Version,
-			Status:      string(report.Status),
-			UploadBy:    report.UploadBy,
-			ApprovedBy:  report.ApprovedBy,
-			ReportType:  report.ReportType.Name,
-		})
-	}
+	reportResponse := toReportResponses(result)
 
 	reportPaginateResponse := response.ReportPaginateResponse{
 		Reports:   reportResponse,
@@ -367,4 +266,32 @@ func (r *reportService) GetByReportType(ctx context.Context, params *request.Rep
 	}
 
 	return &reportPaginateResponse, nil
+}
+
+func toReportResponse(report entities.Report) (result response.ReportResponse) {
+	result = response.ReportResponse{
+		ID:          report.ID,
+		Title:       report.Title,
+		Description: report.Description,
+		PeriodStart: report.PeriodStart,
+		PeriodEnd:   report.PeriodEnd,
+		Year:        report.Year,
+		Quarter:     report.Quarter,
+		Version:     report.Version,
+		Status:      string(report.Status),
+		UploadBy:    report.UploadBy,
+		ApprovedBy:  report.ApprovedBy,
+		ReportType:  report.ReportType.Name,
+	}
+
+	return result
+}
+
+func toReportResponses(reports []entities.Report) []response.ReportResponse {
+	var reportResponse []response.ReportResponse
+	for _, report := range reports {
+		reportResponse = append(reportResponse, toReportResponse(report))
+	}
+
+	return reportResponse
 }

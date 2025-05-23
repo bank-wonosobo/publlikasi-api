@@ -40,16 +40,7 @@ func (r *reportTypeService) Index(ctx context.Context) ([]response.ReportTypeRes
 	}
 
 	// return result
-	var reportTypeResponse []response.ReportTypeResponse
-	for _, reportType := range result {
-		reportTypeResponse = append(reportTypeResponse, response.ReportTypeResponse{
-			ID:          reportType.ID,
-			Name:        reportType.Name,
-			Description: reportType.Description,
-			CreatedAt:   reportType.CreatedAt.String(),
-			UpdatedAt:   reportType.UpdatedAt.String(),
-		})
-	}
+	reportTypeResponse := toReportTypeResponses(result)
 
 	return reportTypeResponse, nil
 }
@@ -72,13 +63,7 @@ func (r *reportTypeService) Create(ctx context.Context, req *request.ReportTypeC
 	}
 
 	// return result
-	reportTypeResponse := response.ReportTypeResponse{
-		ID:          result.ID,
-		Name:        result.Name,
-		Description: result.Description,
-		CreatedAt:   result.CreatedAt.String(),
-		UpdatedAt:   result.UpdatedAt.String(),
-	}
+	reportTypeResponse := toReportTypeResponse(*result)
 
 	return &reportTypeResponse, nil
 }
@@ -100,13 +85,7 @@ func (r *reportTypeService) Update(ctx context.Context, req *request.ReportTypeC
 	}
 
 	// return result
-	reportTypeResponse := response.ReportTypeResponse{
-		ID:          result.ID,
-		Name:        result.Name,
-		Description: result.Description,
-		CreatedAt:   result.CreatedAt.String(),
-		UpdatedAt:   result.UpdatedAt.String(),
-	}
+	reportTypeResponse := toReportTypeResponse(*result)
 
 	return &reportTypeResponse, nil
 }
@@ -125,4 +104,25 @@ func (r *reportTypeService) Delete(ctx context.Context, id int) error {
 	}
 
 	return nil
+}
+
+func toReportTypeResponse(reportType entities.ReportType) (result response.ReportTypeResponse) {
+	result = response.ReportTypeResponse{
+		ID:          reportType.ID,
+		Name:        reportType.Name,
+		Description: reportType.Description,
+		CreatedAt:   reportType.CreatedAt.String(),
+		UpdatedAt:   reportType.UpdatedAt.String(),
+	}
+
+	return result
+}
+
+func toReportTypeResponses(reportTypes []entities.ReportType) []response.ReportTypeResponse {
+	var reportTypeResponse []response.ReportTypeResponse
+	for _, reportType := range reportTypes {
+		reportTypeResponse = append(reportTypeResponse, toReportTypeResponse(reportType))
+	}
+
+	return reportTypeResponse
 }
