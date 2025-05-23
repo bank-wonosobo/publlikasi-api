@@ -1,0 +1,57 @@
+name: API Publication CI CD for Staging
+on:
+  pull_request:
+    branches: [dev]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # Checkout kode dari repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Setup Go
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.23
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: go mod tidy
+
+      # Build aplikasi
+      - name: Build
+        run: go build -v ./...
+
+      # Jalankan unit tests
+      - name: Test
+        run: go test -v ./...
+
+      # Static analysis (opsional)
+      - name: Run Lint
+        run: |
+          go install golang.org/x/lint/golint@latest
+          golint ./...
+
+      #  github registry login
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:dev .
+
+      # Build and push the Docker image
+      - name: Push Docker image
+        run: |
+          docker push ghcr.io/${{ github.repository }}:dev
