@@ -24,7 +24,7 @@ WORKDIR /app
 COPY --from=builder /app/build/main .
 
 # Expose port yang digunakan oleh aplikasi
-EXPOSE 8080
+EXPOSE 8001
 
 # Jalankan aplikasi
 CMD ["./main"]

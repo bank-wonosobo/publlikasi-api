@@ -16,6 +16,7 @@ const (
 )
 
 type Report struct {
+	*gorm.Model
 	ID           string `gorm:"primaryKey"`
 	Title        string `gorm:"varchar(255)"`
 	Description  string `gorm:"text"`

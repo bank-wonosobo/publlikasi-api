@@ -10,11 +10,12 @@ import (
 
 type ReportRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
-	GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offside int) ([]entities.Report, int64, error)
+	GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offsite int) ([]entities.Report, int64, error)
 	Update(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
 	Delete(ctx context.Context, tx *gorm.DB, report *entities.Report) error
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Report, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.Report, error)
+	GetByReportType(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, reportTypeID int, offsite int) ([]entities.Report, int64, error)
 }
 
 type reportRepository struct {
@@ -25,7 +26,7 @@ func NewReport() ReportRepository {
 }
 
 // GetAll implements ReportRepository.
-func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offside int) (result []entities.Report, total int64, err error) {
+func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offsite int) (result []entities.Report, total int64, err error) {
 	query := tx.Model(&entities.Report{})
 
 	if params.Title != "" {
@@ -42,7 +43,7 @@ func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *requ
 
 	query.Count(&total)
 
-	err = query.Preload("ReportType").Limit(params.Limit).Offset(offside).Find(&result).Error
+	err = query.Preload("ReportType").Limit(params.Limit).Offset(offsite).Find(&result).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -98,4 +99,32 @@ func (r *reportRepository) Delete(ctx context.Context, tx *gorm.DB, report *enti
 	}
 
 	return nil
+}
+
+// GetByReportType implements ReportRepository.
+func (r *reportRepository) GetByReportType(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, reportTypeID int, offsite int) (result []entities.Report, total int64, err error) {
+	query := tx.Model(&entities.Report{})
+
+	query = query.Where("report_type_id = ?", reportTypeID)
+
+	if params.Title != "" {
+		query = query.Where("title ILIKE ?", "%"+params.Title+"%")
+	}
+
+	if params.Description != "" {
+		query = query.Where("description ILIKE ?", "%"+params.Description+"%")
+	}
+
+	if params.Year != 0 {
+		query = query.Where("year = ?", params.Year)
+	}
+
+	query.Count(&total)
+
+	err = query.Preload("ReportType").Limit(params.Limit).Offset(offsite).Find(&result).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, total, nil
 }

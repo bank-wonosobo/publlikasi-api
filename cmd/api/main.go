@@ -83,6 +83,6 @@ func main() {
 
 func defaultRoute(router fiber.Router) {
 	router.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON("Default Route Diengs.id API")
+		return c.JSON("Default Route Publikasi API")
 	})
 }

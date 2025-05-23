@@ -21,6 +21,7 @@ type ReportService interface {
 	Delete(ctx context.Context, id string) error
 	Approve(ctx context.Context, id string) (*response.ReportResponse, error)
 	Archive(ctx context.Context, id string) (*response.ReportResponse, error)
+	GetByReportType(ctx context.Context, params *request.ReportGetQueryParams, reportTypeID int) (*response.ReportPaginateResponse, error)
 }
 
 type reportService struct {
@@ -317,4 +318,53 @@ func (r *reportService) Approve(ctx context.Context, id string) (*response.Repor
 		ReportType:  result.ReportType.Name,
 	}
 	return &reportResponse, nil
+}
+
+// GetByReportType implements ReportService.
+func (r *reportService) GetByReportType(ctx context.Context, params *request.ReportGetQueryParams, reportTypeID int) (*response.ReportPaginateResponse, error) {
+	// Set default values
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 10
+	}
+
+	// set offset
+	offset := (params.Page - 1) * params.Limit
+
+	// get all data with total
+	result, total, err := r.reportRepo.GetByReportType(ctx, r.db, params, reportTypeID, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	var reportResponse []response.ReportResponse
+	for _, report := range result {
+		reportResponse = append(reportResponse, response.ReportResponse{
+			ID:          report.ID,
+			Title:       report.Title,
+			Description: report.Description,
+			PeriodStart: report.PeriodStart,
+			PeriodEnd:   report.PeriodEnd,
+			Year:        report.Year,
+			Quarter:     report.Quarter,
+			Version:     report.Version,
+			Status:      string(report.Status),
+			UploadBy:    report.UploadBy,
+			ApprovedBy:  report.ApprovedBy,
+			ReportType:  report.ReportType.Name,
+		})
+	}
+
+	reportPaginateResponse := response.ReportPaginateResponse{
+		Reports:   reportResponse,
+		Page:      params.Page,
+		Limit:     params.Limit,
+		Total:     total,
+		TotalPage: (total + int64(params.Limit) - 1) / int64(params.Limit),
+	}
+
+	return &reportPaginateResponse, nil
 }

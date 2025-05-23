@@ -13,6 +13,7 @@ func RegisterReportRouter(router fiber.Router, service services.ReportService, v
 	// public routes
 	report := router.Group("reports")
 	report.Get("/", handler.Index)
+	report.Get("/:report_type_id/report-type", handler.GetByReportType)
 
 	// admin routes
 	admin := router.Group("admin/reports")

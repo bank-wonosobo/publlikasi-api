@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strconv"
+
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
@@ -130,6 +132,29 @@ func (h *ReportHandler) Archive(c *fiber.Ctx) error {
 
 	// call service
 	result, err := h.reportService.Archive(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
+func (h *ReportHandler) GetByReportType(c *fiber.Ctx) error {
+	// get report type id
+	idParams := c.Params("report_type_id")
+
+	reportTypeID, err := strconv.Atoi(idParams)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+	// parse params
+	var params request.ReportGetQueryParams
+	if err := c.QueryParser(&params); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// call service
+	result, err := h.reportService.GetByReportType(c.Context(), &params, reportTypeID)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
 	}
