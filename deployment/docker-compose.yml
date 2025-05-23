@@ -12,10 +12,10 @@ services:
     env_file:
       - .env
     networks:
-      - diengs-network
+      - publication-network
 
 networks:
   publication-network:
-    name: diengs-network
+    name: publication-network
     driver: bridge
     external: true
