@@ -12,6 +12,7 @@ import (
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/storage"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/validator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
@@ -54,6 +55,7 @@ func main() {
 	// middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
+	app.Use(cors.New())
 	// app.Use(cors.New(cors.Config{
 	// 	// AllowOriginsFunc: func(origin string) bool {
 	// 	// 	allowedOrigins := []string{
