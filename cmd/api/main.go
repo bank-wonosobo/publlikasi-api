@@ -39,7 +39,11 @@ func main() {
 	)
 
 	// auto migrate entity
-	if err := db.AutoMigrate(entities.ReportType{}, entities.Report{}); err != nil {
+	if err := db.AutoMigrate(
+		entities.ReportType{},
+		entities.Report{},
+		entities.PostType{},
+		entities.Post{}); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
@@ -51,7 +55,25 @@ func main() {
 	// middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOriginsFunc: func(origin string) bool {
+			allowedOrigins := []string{
+				"http://localhost:3000",
+				"http://localhost:5173",
+				"http://bankwonosobo.co.id",
+				"http://adminer.bankwonosobo.co.id",
+			}
+			for _, o := range allowedOrigins {
+				if origin == o {
+					return true
+				}
+			}
+			return false
+		},
+		AllowMethods:     "GET,POST,PUT,DELETE",
+		AllowHeaders:     "*",
+		AllowCredentials: true,
+	}))
 
 	// init repo
 	reportTypeRepo := repositories.NewReportType()
