@@ -12,7 +12,6 @@ import (
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/storage"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/validator"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
@@ -55,25 +54,26 @@ func main() {
 	// middleware
 	app.Use(logger.New())
 	app.Use(recover.New())
-	app.Use(cors.New(cors.Config{
-		AllowOriginsFunc: func(origin string) bool {
-			allowedOrigins := []string{
-				"http://localhost:3000",
-				"http://localhost:5173",
-				"http://bankwonosobo.co.id",
-				"http://adminer.bankwonosobo.co.id",
-			}
-			for _, o := range allowedOrigins {
-				if origin == o {
-					return true
-				}
-			}
-			return false
-		},
-		AllowMethods:     "GET,POST,PUT,DELETE",
-		AllowHeaders:     "*",
-		AllowCredentials: true,
-	}))
+	// app.Use(cors.New(cors.Config{
+	// 	// AllowOriginsFunc: func(origin string) bool {
+	// 	// 	allowedOrigins := []string{
+	// 	// 		"http://localhost:3000",
+	// 	// 		"http://localhost:5173",
+	// 	// 		"http://bankwonosobo.co.id",
+	// 	// 		"http://adminer.bankwonosobo.co.id",
+	// 	// 	}
+	// 	// 	for _, o := range allowedOrigins {
+	// 	// 		if origin == o {
+	// 	// 			return true
+	// 	// 		}
+	// 	// 	}
+	// 	// 	return false
+	// 	// },
+	// 	// AllowOrigins: "",
+	// 	// AllowMethods:     "GET,POST,PUT,DELETE",
+	// 	// AllowHeaders:     "*",
+	// 	// AllowCredentials: true,
+	// }))
 
 	// init repo
 	reportTypeRepo := repositories.NewReportType()
