@@ -30,5 +30,4 @@ type ReportUpdateRequest struct {
 	Quarter     *int      `json:"quarter"`
 	Version     string    `json:"version" validate:"required"`
 	ReportType  string    `json:"report_type" validate:"required"`
-	Status      string    `json:"status" validate:"required"`
 }

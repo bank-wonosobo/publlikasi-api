@@ -167,7 +167,6 @@ func (r *reportService) Update(ctx context.Context, req *request.ReportUpdateReq
 	report.Year = req.Year
 	report.Version = req.Version
 	report.ReportType = *reportType
-	report.Status = entities.Status(req.Status)
 
 	result, err := r.reportRepo.Update(ctx, r.db, report)
 	if err != nil {
