@@ -15,7 +15,7 @@ import (
 
 type ReportService interface {
 	Index(ctx context.Context, params *request.ReportGetQueryParams) (*response.ReportPaginateResponse, error)
-	Create(ctx context.Context, req *request.ReportCreateRequest) (*response.ReportResponse, error)
+	Create(ctx context.Context, req *request.ReportCreateRequest, file *multipart.FileHeader) (*response.ReportResponse, error)
 	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error)
 	Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error)
 	Delete(ctx context.Context, id string) error
@@ -79,7 +79,7 @@ func (r *reportService) Index(ctx context.Context, params *request.ReportGetQuer
 }
 
 // Create implements ReportService.
-func (r *reportService) Create(ctx context.Context, req *request.ReportCreateRequest) (*response.ReportResponse, error) {
+func (r *reportService) Create(ctx context.Context, req *request.ReportCreateRequest, file *multipart.FileHeader) (*response.ReportResponse, error) {
 	// check if title exist
 	_, err := r.reportRepo.FindByTitle(ctx, r.db, req.Title)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -91,6 +91,12 @@ func (r *reportService) Create(ctx context.Context, req *request.ReportCreateReq
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("report type tidak ditemukan")
 	}
+	// upload file
+	fileUrl, err := r.s3.UploadFileRename(file, "reports/"+reportType.Name, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	// create report type
 	report := entities.Report{
 		Title:       req.Title,
@@ -103,6 +109,7 @@ func (r *reportService) Create(ctx context.Context, req *request.ReportCreateReq
 		ReportType:  *reportType,
 		Status:      entities.Draft,
 		UploadBy:    "user",
+		FileUrl:     &fileUrl,
 	}
 	result, err := r.reportRepo.Save(ctx, r.db, &report)
 	if err != nil {

@@ -51,8 +51,13 @@ func (h *ReportHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
 	}
 
+	// get file
+	file, err := c.FormFile("file")
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
 	// call service
-	result, err := h.reportService.Create(c.Context(), &request)
+	result, err := h.reportService.Create(c.Context(), &request, file)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
 	}
