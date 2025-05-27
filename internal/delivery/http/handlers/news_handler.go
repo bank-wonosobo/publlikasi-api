@@ -47,3 +47,23 @@ func (h *NewsHandler) Create(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
 }
+
+func (h *NewsHandler) GetAll(c *fiber.Ctx) error {
+	// parse params
+	var params request.NewsGetQueryParams
+	if err := c.QueryParser(&params); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// call service
+	result, total, err := h.newsService.Index(c.Context(), &params)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// calculate total page
+	totalPage := (total + int64(params.Limit) - 1) / int64(params.Limit)
+
+	// return result
+	return c.Status(fiber.StatusOK).JSON(response.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
+}

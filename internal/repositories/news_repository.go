@@ -3,13 +3,14 @@ package repositories
 import (
 	"context"
 
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"gorm.io/gorm"
 )
 
 type NewsRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, news entities.News) (*entities.News, error)
-	GetAll() ([]entities.News, error)
+	GetAll(ctx context.Context, tx *gorm.DB, params *request.NewsGetQueryParams, offsite int) ([]entities.News, int64, error)
 	Update() (*entities.News, error)
 	Delete() (*entities.News, error)
 	FindByID() (*entities.News, error)
@@ -32,6 +33,28 @@ func (n *newsRepository) Save(ctx context.Context, tx *gorm.DB, news entities.Ne
 	}
 
 	return &news, nil
+}
+
+// GetAll implements NewsRepository.
+func (n *newsRepository) GetAll(ctx context.Context, tx *gorm.DB, params *request.NewsGetQueryParams, offsite int) (result []entities.News, total int64, err error) {
+	query := tx.Model(&entities.News{})
+
+	if params.Title != "" {
+		query = query.Where("title ILIKE ?", "%"+params.Title+"%")
+	}
+
+	if params.Content != "" {
+		query = query.Where("content ILIKE ?", "%"+params.Content+"%")
+	}
+
+	query.Count(&total)
+
+	err = query.Limit(params.Limit).Offset(offsite).Find(&result).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, total, nil
 }
 
 // Delete implements NewsRepository.
@@ -57,11 +80,6 @@ func (n *newsRepository) FindByTitle(ctx context.Context, tx *gorm.DB, title str
 	}
 
 	return result, nil
-}
-
-// GetAll implements NewsRepository.
-func (n *newsRepository) GetAll() ([]entities.News, error) {
-	panic("unimplemented")
 }
 
 // Update implements NewsRepository.

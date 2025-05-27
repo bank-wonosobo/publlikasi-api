@@ -14,7 +14,7 @@ import (
 )
 
 type ReportService interface {
-	Index(ctx context.Context, params *request.ReportGetQueryParams) (*response.ReportPaginateResponse, error)
+	Index(ctx context.Context, params *request.ReportGetQueryParams) ([]response.ReportResponse, int64, error)
 	Create(ctx context.Context, req *request.ReportCreateRequest, file *multipart.FileHeader) (*response.ReportResponse, error)
 	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error)
 	Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error)
@@ -45,7 +45,7 @@ func NewReport(db *gorm.DB,
 }
 
 // Index implements ReportService.
-func (r *reportService) Index(ctx context.Context, params *request.ReportGetQueryParams) (*response.ReportPaginateResponse, error) {
+func (r *reportService) Index(ctx context.Context, params *request.ReportGetQueryParams) ([]response.ReportResponse, int64, error) {
 	// Set default values
 	if params.Page < 1 {
 		params.Page = 1
@@ -60,22 +60,13 @@ func (r *reportService) Index(ctx context.Context, params *request.ReportGetQuer
 	// get all data with total
 	result, total, err := r.reportRepo.GetAll(ctx, r.db, params, offset)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	// return result
 	reportResponse := toReportResponses(result)
 
-	reportPaginateResponse := response.ReportPaginateResponse{
-		Reports:   reportResponse,
-		Page:      params.Page,
-		Limit:     params.Limit,
-		Total:     total,
-		TotalPage: (total + int64(params.Limit) - 1) / int64(params.Limit),
-	}
-
-	return &reportPaginateResponse, nil
-
+	return reportResponse, total, nil
 }
 
 // Create implements ReportService.

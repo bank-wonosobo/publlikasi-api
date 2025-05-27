@@ -30,12 +30,16 @@ func (h *ReportHandler) Index(c *fiber.Ctx) error {
 	}
 
 	// call service
-	result, err := h.reportService.Index(c.Context(), &params)
+	result, total, err := h.reportService.Index(c.Context(), &params)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	// calculate total page
+	totalPage := (total + int64(params.Limit) - 1) / int64(params.Limit)
+
+	// return result
+	return c.Status(fiber.StatusOK).JSON(response.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
 }
 
 func (h *ReportHandler) Create(c *fiber.Ctx) error {

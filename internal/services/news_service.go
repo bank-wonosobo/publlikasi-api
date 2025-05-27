@@ -15,6 +15,7 @@ import (
 
 type NewsService interface {
 	Create(ctx context.Context, request *request.NewsCreateRequest, file *multipart.FileHeader) (*response.NewsResponse, error)
+	Index(ctx context.Context, params *request.NewsGetQueryParams) ([]response.NewsResponse, int64, error)
 }
 
 type newsService struct {
@@ -64,6 +65,31 @@ func (n *newsService) Create(ctx context.Context, req *request.NewsCreateRequest
 	return &newsReponse, nil
 }
 
+// Index implements NewsService.
+func (n *newsService) Index(ctx context.Context, params *request.NewsGetQueryParams) ([]response.NewsResponse, int64, error) {
+	// Set default values
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 10
+	}
+
+	// set offset
+	offset := (params.Page - 1) * params.Limit
+
+	// get all data with total
+	result, total, err := n.newsRepo.GetAll(ctx, n.db, params, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// return result
+	newsResponses := toNewsResponses(result)
+
+	return newsResponses, total, nil
+}
+
 func toNewsResponse(news entities.News) (result response.NewsResponse) {
 	result = response.NewsResponse{
 		ID:          news.ID,
@@ -80,4 +106,13 @@ func toNewsResponse(news entities.News) (result response.NewsResponse) {
 	}
 
 	return result
+}
+
+func toNewsResponses(news []entities.News) []response.NewsResponse {
+	var newsReponses []response.NewsResponse
+	for _, newsItem := range news {
+		newsReponses = append(newsReponses, toNewsResponse(newsItem))
+	}
+
+	return newsReponses
 }
