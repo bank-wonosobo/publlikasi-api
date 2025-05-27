@@ -281,6 +281,7 @@ func toReportResponse(report entities.Report) (result response.ReportResponse) {
 		UploadBy:    report.UploadBy,
 		ApprovedBy:  report.ApprovedBy,
 		ReportType:  report.ReportType.Name,
+		FileUrl:     report.FileUrl,
 	}
 
 	return result

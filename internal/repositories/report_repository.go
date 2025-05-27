@@ -16,6 +16,7 @@ type ReportRepository interface {
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Report, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.Report, error)
 	GetByReportType(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, reportTypeID int, offsite int) ([]entities.Report, int64, error)
+	GetByNameDescYear()
 }
 
 type reportRepository struct {
@@ -127,4 +128,9 @@ func (r *reportRepository) GetByReportType(ctx context.Context, tx *gorm.DB, par
 	}
 
 	return result, total, nil
+}
+
+// GetByNameDescYear implements ReportRepository.
+func (r *reportRepository) GetByNameDescYear() {
+	panic("unimplemented")
 }
