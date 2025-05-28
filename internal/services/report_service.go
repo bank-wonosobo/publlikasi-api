@@ -221,7 +221,9 @@ func (r *reportService) Approve(ctx context.Context, id string) (*response.Repor
 	}
 
 	// update report
+	userApprover := "user approver"
 	report.Status = entities.Published
+	report.ApprovedBy = &userApprover
 	result, err := r.reportRepo.Update(ctx, r.db, report)
 	if err != nil {
 		return nil, err

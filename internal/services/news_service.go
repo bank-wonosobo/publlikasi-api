@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"mime/multipart"
+	"time"
 
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
@@ -143,7 +144,12 @@ func (n *newsService) Approve(ctx context.Context, id string) (*response.NewsRes
 	}
 
 	// update news
+	now := time.Now()
+	userApprover := "user approver"
+
 	news.Status = entities.Published
+	news.PublishedAt = &now
+	news.ApprovedBy = &userApprover
 	result, err := n.newsRepo.Update(ctx, n.db, news)
 	if err != nil {
 		return nil, err
