@@ -64,7 +64,7 @@ func (n *newsService) Create(ctx context.Context, req *request.NewsCreateRequest
 		Title:    req.Title,
 		Slug:     req.Slug,
 		Content:  req.Content,
-		Author:   "user",
+		Author:   "user login",
 		Status:   entities.Draft,
 		ImageUrl: imageUrl,
 	}
@@ -113,7 +113,7 @@ func (n *newsService) Update(ctx context.Context, request *request.NewsUpdateReq
 
 	// update report type
 	news.Title = request.Title
-	news.Author = request.Author
+	news.Author = "user login edited"
 	news.Content = request.Content
 	news.Slug = request.Slug
 	if file != nil {
