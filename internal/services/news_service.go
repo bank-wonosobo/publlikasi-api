@@ -17,6 +17,11 @@ type NewsService interface {
 	Create(ctx context.Context, request *request.NewsCreateRequest, file *multipart.FileHeader) (*response.NewsResponse, error)
 	Index(ctx context.Context, params *request.NewsGetQueryParams) ([]response.NewsResponse, int64, error)
 	Update(ctx context.Context, request *request.NewsUpdateRequest, file *multipart.FileHeader, id string) (*response.NewsResponse, error)
+	Delete(ctx context.Context, id string) error
+	Approve(ctx context.Context, id string) (*response.NewsResponse, error)
+	Archive(ctx context.Context, id string) (*response.NewsResponse, error)
+	Detail(ctx context.Context, id string) (*response.NewsResponse, error)
+	DetailBySlug(ctx context.Context, slug string) (*response.NewsResponse, error)
 }
 
 type newsService struct {
@@ -122,6 +127,73 @@ func (n *newsService) Update(ctx context.Context, request *request.NewsUpdateReq
 	newsResponse := toNewsResponse(*result)
 	return &newsResponse, nil
 }
+
+// Approve implements NewsService.
+func (n *newsService) Approve(ctx context.Context, id string) (*response.NewsResponse, error) {
+	// get news type by id
+	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	if err != nil {
+		return nil, errors.New("berita tidak ditemukan")
+	}
+
+	// update news
+	news.Status = entities.Published
+	result, err := n.newsRepo.Update(ctx, n.db, news)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	reportResponse := toNewsResponse(*result)
+	return &reportResponse, nil
+}
+
+// Archive implements NewsService.
+func (n *newsService) Archive(ctx context.Context, id string) (*response.NewsResponse, error) {
+	// get news type by id
+	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	if err != nil {
+		return nil, errors.New("news tidak ditemukan")
+	}
+
+	// update news
+	news.Status = entities.Archived
+	result, err := n.newsRepo.Update(ctx, n.db, news)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	reportResponse := toNewsResponse(*result)
+	return &reportResponse, nil
+}
+
+// Delete implements NewsService.
+func (n *newsService) Delete(ctx context.Context, id string) error {
+	// get news  by id
+	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	if err != nil {
+		return errors.New("news tidak ditemukan")
+	}
+
+	err = n.newsRepo.Delete(ctx, n.db, news)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Detail implements NewsService.
+func (n *newsService) Detail(ctx context.Context, id string) (*response.NewsResponse, error) {
+	panic("unimplemented")
+}
+
+// DetailBySlug implements NewsService.
+func (n *newsService) DetailBySlug(ctx context.Context, slug string) (*response.NewsResponse, error) {
+	panic("unimplemented")
+}
+
 
 func toNewsResponse(news entities.News) (result response.NewsResponse) {
 	result = response.NewsResponse{

@@ -97,3 +97,41 @@ func (h *NewsHandler) Update(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
 }
+
+func (h *NewsHandler) Delete(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	err := h.newsService.Delete(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(id))
+}
+
+func (h *NewsHandler) Approve(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.newsService.Approve(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
+func (h *NewsHandler) Archive(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.newsService.Archive(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}

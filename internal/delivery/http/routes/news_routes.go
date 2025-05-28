@@ -19,4 +19,7 @@ func RegisterNewsRouter(router fiber.Router, service services.NewsService, valid
 	admin.Post("/", handler.Create)
 	admin.Get("/", handler.GetAll)
 	admin.Put("/:id", handler.Update)
+	admin.Delete("/:id", handler.Delete)
+	admin.Put("/:id/approve", handler.Approve)
+	admin.Put("/:id/archive", handler.Archive)
 }
