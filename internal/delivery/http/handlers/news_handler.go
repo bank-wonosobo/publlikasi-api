@@ -135,3 +135,29 @@ func (h *NewsHandler) Archive(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
 }
+
+func (h *NewsHandler) Detail(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.newsService.Detail(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
+func (h *NewsHandler) DetailWSlug(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("slug")
+
+	// call service
+	result, err := h.newsService.DetailBySlug(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}

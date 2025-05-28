@@ -46,6 +46,12 @@ func (n *newsService) Create(ctx context.Context, req *request.NewsCreateRequest
 		return nil, errors.New("berita sudah ada")
 	}
 
+	// check if slug exist
+	_, err = n.newsRepo.FindBySlug(ctx, n.db, req.Slug)
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("slug sudah ada")
+	}
+
 	// upload file
 	imageUrl, err := n.s3.UploadFileRename(file, "news/images/", nil)
 	if err != nil {
@@ -186,14 +192,29 @@ func (n *newsService) Delete(ctx context.Context, id string) error {
 
 // Detail implements NewsService.
 func (n *newsService) Detail(ctx context.Context, id string) (*response.NewsResponse, error) {
-	panic("unimplemented")
+	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	newsReponse := toNewsResponse(*news)
+
+	return &newsReponse, nil
 }
 
 // DetailBySlug implements NewsService.
 func (n *newsService) DetailBySlug(ctx context.Context, slug string) (*response.NewsResponse, error) {
-	panic("unimplemented")
-}
+	news, err := n.newsRepo.FindBySlug(ctx, n.db, slug)
+	if err != nil {
+		return nil, err
+	}
 
+	// return result
+	newsReponse := toNewsResponse(*news)
+
+	return &newsReponse, nil
+}
 
 func toNewsResponse(news entities.News) (result response.NewsResponse) {
 	result = response.NewsResponse{

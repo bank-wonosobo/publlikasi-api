@@ -12,7 +12,9 @@ func RegisterNewsRouter(router fiber.Router, service services.NewsService, valid
 
 	// public routes
 	news := router.Group("/news")
-	news.Post("/", handler.Create)
+	news.Get("/", handler.GetAll)
+	news.Get("/:id", handler.Detail)
+	news.Get("/:slug/slug", handler.DetailWSlug)
 
 	// admin router
 	admin := router.Group("/admin/news")
@@ -22,4 +24,6 @@ func RegisterNewsRouter(router fiber.Router, service services.NewsService, valid
 	admin.Delete("/:id", handler.Delete)
 	admin.Put("/:id/approve", handler.Approve)
 	admin.Put("/:id/archive", handler.Archive)
+	admin.Get("/:id", handler.Detail)
+	admin.Get("/:slug/slug", handler.DetailWSlug)
 }

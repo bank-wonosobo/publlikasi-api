@@ -14,7 +14,7 @@ type NewsRepository interface {
 	Update(ctx context.Context, tx *gorm.DB, news *entities.News) (*entities.News, error)
 	Delete(ctx context.Context, tx *gorm.DB, news *entities.News) error
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.News, error)
-	FindBySlug() (*entities.News, error)
+	FindBySlug(ctx context.Context, tx *gorm.DB, slug string) (*entities.News, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.News, error)
 }
 
@@ -67,11 +67,6 @@ func (n *newsRepository) FindByID(ctx context.Context, tx *gorm.DB, id string) (
 	return result, nil
 }
 
-// FindBySlug implements NewsRepository.
-func (n *newsRepository) FindBySlug() (*entities.News, error) {
-	panic("unimplemented")
-}
-
 // FindByTitle implements NewsRepository.
 func (n *newsRepository) FindByTitle(ctx context.Context, tx *gorm.DB, title string) (result *entities.News, err error) {
 	err = tx.WithContext(ctx).Where("title = ?", title).First(&result).Error
@@ -100,4 +95,14 @@ func (n *newsRepository) Delete(ctx context.Context, tx *gorm.DB, news *entities
 	}
 
 	return nil
+}
+
+// FindBySlug implements NewsRepository.
+func (n *newsRepository) FindBySlug(ctx context.Context, tx *gorm.DB, slug string) (result *entities.News, err error) {
+	err = tx.WithContext(ctx).Where("slug = ?", slug).First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
