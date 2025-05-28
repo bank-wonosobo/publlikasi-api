@@ -67,3 +67,33 @@ func (h *NewsHandler) GetAll(c *fiber.Ctx) error {
 	// return result
 	return c.Status(fiber.StatusOK).JSON(response.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
 }
+
+func (h *NewsHandler) Update(c *fiber.Ctx) error {
+	var request request.NewsUpdateRequest
+	id := c.Params("id")
+	// parse request
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// validate request
+	if err := h.validator.Validate(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	// get file
+	file, err := c.FormFile("image")
+	if request.Image != nil {
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		}
+	}
+
+	// call service
+	result, err := h.newsService.Update(c.Context(), &request, file, id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}

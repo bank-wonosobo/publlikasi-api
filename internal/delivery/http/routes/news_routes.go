@@ -18,4 +18,5 @@ func RegisterNewsRouter(router fiber.Router, service services.NewsService, valid
 	admin := router.Group("/admin/news")
 	admin.Post("/", handler.Create)
 	admin.Get("/", handler.GetAll)
+	admin.Put("/:id", handler.Update)
 }

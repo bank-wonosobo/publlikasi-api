@@ -16,6 +16,7 @@ import (
 type NewsService interface {
 	Create(ctx context.Context, request *request.NewsCreateRequest, file *multipart.FileHeader) (*response.NewsResponse, error)
 	Index(ctx context.Context, params *request.NewsGetQueryParams) ([]response.NewsResponse, int64, error)
+	Update(ctx context.Context, request *request.NewsUpdateRequest, file *multipart.FileHeader, id string) (*response.NewsResponse, error)
 }
 
 type newsService struct {
@@ -55,7 +56,7 @@ func (n *newsService) Create(ctx context.Context, req *request.NewsCreateRequest
 		Status:   entities.Draft,
 		ImageUrl: imageUrl,
 	}
-	result, err := n.newsRepo.Save(ctx, n.db, report)
+	result, err := n.newsRepo.Save(ctx, n.db, &report)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +89,38 @@ func (n *newsService) Index(ctx context.Context, params *request.NewsGetQueryPar
 	newsResponses := toNewsResponses(result)
 
 	return newsResponses, total, nil
+}
+
+// Update implements NewsService.
+func (n *newsService) Update(ctx context.Context, request *request.NewsUpdateRequest, file *multipart.FileHeader, id string) (*response.NewsResponse, error) {
+	// check news type id
+	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("news id tidak ditemukan")
+	}
+
+	// update report type
+	news.Title = request.Title
+	news.Author = request.Author
+	news.Content = request.Content
+	news.Slug = request.Slug
+	if file != nil {
+		// upload file
+		imageUrl, err := n.s3.UploadFileRename(file, "news/images/", nil)
+		if err != nil {
+			return nil, err
+		}
+		news.ImageUrl = imageUrl
+	}
+
+	result, err := n.newsRepo.Update(ctx, n.db, news)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	newsResponse := toNewsResponse(*result)
+	return &newsResponse, nil
 }
 
 func toNewsResponse(news entities.News) (result response.NewsResponse) {

@@ -9,11 +9,11 @@ import (
 )
 
 type NewsRepository interface {
-	Save(ctx context.Context, tx *gorm.DB, news entities.News) (*entities.News, error)
+	Save(ctx context.Context, tx *gorm.DB, news *entities.News) (*entities.News, error)
 	GetAll(ctx context.Context, tx *gorm.DB, params *request.NewsGetQueryParams, offsite int) ([]entities.News, int64, error)
-	Update() (*entities.News, error)
+	Update(ctx context.Context, tx *gorm.DB, news *entities.News) (*entities.News, error)
 	Delete() (*entities.News, error)
-	FindByID() (*entities.News, error)
+	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.News, error)
 	FindBySlug() (*entities.News, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.News, error)
 }
@@ -26,13 +26,13 @@ func NewNews() NewsRepository {
 }
 
 // Create implements NewsRepository.
-func (n *newsRepository) Save(ctx context.Context, tx *gorm.DB, news entities.News) (*entities.News, error) {
+func (n *newsRepository) Save(ctx context.Context, tx *gorm.DB, news *entities.News) (*entities.News, error) {
 	err := tx.WithContext(ctx).Create(&news).Error
 	if err != nil {
 		return nil, err
 	}
 
-	return &news, nil
+	return news, nil
 }
 
 // GetAll implements NewsRepository.
@@ -57,13 +57,18 @@ func (n *newsRepository) GetAll(ctx context.Context, tx *gorm.DB, params *reques
 	return result, total, nil
 }
 
-// Delete implements NewsRepository.
-func (n *newsRepository) Delete() (*entities.News, error) {
-	panic("unimplemented")
+// FindByID implements NewsRepository.
+func (n *newsRepository) FindByID(ctx context.Context, tx *gorm.DB, id string) (result *entities.News, err error) {
+	err = tx.WithContext(ctx).Where("id = ?", id).First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-// FindByID implements NewsRepository.
-func (n *newsRepository) FindByID() (*entities.News, error) {
+// Delete implements NewsRepository.
+func (n *newsRepository) Delete() (*entities.News, error) {
 	panic("unimplemented")
 }
 
@@ -83,6 +88,11 @@ func (n *newsRepository) FindByTitle(ctx context.Context, tx *gorm.DB, title str
 }
 
 // Update implements NewsRepository.
-func (n *newsRepository) Update() (*entities.News, error) {
-	panic("unimplemented")
+func (n *newsRepository) Update(ctx context.Context, tx *gorm.DB, news *entities.News) (*entities.News, error) {
+	err := tx.WithContext(ctx).Preload("ReportType").Save(&news).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return news, nil
 }
