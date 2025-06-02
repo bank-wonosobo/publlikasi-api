@@ -17,4 +17,5 @@ func RegisterAnnouncementRouter(router fiber.Router, service services.Announceme
 	// admin routes
 	admin := router.Group("/admin/announcements")
 	admin.Get("/", handler.Index)
+	admin.Post("/", handler.Create)
 }

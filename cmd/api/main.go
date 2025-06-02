@@ -93,7 +93,7 @@ func main() {
 	reportTypeService := services.NewReportType(db, reportTypeRepo)
 	reportService := services.NewReport(db, reportRepo, reportTypeRepo, s3Storage)
 	newsService := services.NewNews(db, newsRepo, s3Storage)
-	announcementServce := services.NewAnnouncement(db, announcementRepo)
+	announcementServce := services.NewAnnouncement(db, announcementRepo, s3Storage)
 
 	// validator
 	validator := validator.NewValidator()

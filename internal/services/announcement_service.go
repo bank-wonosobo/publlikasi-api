@@ -2,27 +2,34 @@ package services
 
 import (
 	"context"
+	"errors"
+	"mime/multipart"
 
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/repositories"
+	"github.com/bank-wonosobo/publlikasi-api.git/pkg/storage"
 	"gorm.io/gorm"
 )
 
 type AnnouncementService interface {
 	Index(ctx context.Context, param *dto.AnnouncementGetQueryParams) ([]dto.AnnouncementResponse, int64, error)
+	Create(ctx context.Context, request *dto.AnnouncementCreateReq, file *multipart.FileHeader) (*dto.AnnouncementResponse, error)
 }
 
 type announcementService struct {
 	db               *gorm.DB
 	announcementRepo repositories.AnnouncementRepository
+	s3               storage.S3Storage
 }
 
 func NewAnnouncement(db *gorm.DB,
-	announcementRepo repositories.AnnouncementRepository) AnnouncementService {
+	announcementRepo repositories.AnnouncementRepository,
+	s3 storage.S3Storage) AnnouncementService {
 	return &announcementService{
 		db:               db,
 		announcementRepo: announcementRepo,
+		s3:               s3,
 	}
 }
 
@@ -49,6 +56,42 @@ func (a *announcementService) Index(ctx context.Context, params *dto.Announcemen
 	announcementRes := toAnnouncementResponses(result)
 
 	return announcementRes, total, nil
+}
+
+// Create implements AnnouncementService.
+func (a *announcementService) Create(ctx context.Context, request *dto.AnnouncementCreateReq, file *multipart.FileHeader) (*dto.AnnouncementResponse, error) {
+	// check if title exist
+	_, err := a.announcementRepo.FindByTitle(ctx, a.db, request.Title)
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("pengumuman sudah ada")
+	}
+
+	// upload file
+	attachmentUrl, err := a.s3.UploadFileRename(file, "announcements/attachment/", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// create report type
+	report := entities.Announcement{
+		Title:          request.Title,
+		Content:        request.Content,
+		Author:         "user login",
+		StartDate:      request.StartDate,
+		EndDate:        request.EndDate,
+		TargetAudience: entities.TargetAudience(request.TargetAudience),
+		AttachmentUrl:  &attachmentUrl,
+		IsActive:       true,
+		Status:         entities.Draft,
+	}
+	result, err := a.announcementRepo.Save(ctx, a.db, &report)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	announcementRes := toAnnouncementResponse(*result)
+	return &announcementRes, nil
 }
 
 func toAnnouncementResponse(a entities.Announcement) dto.AnnouncementResponse {
