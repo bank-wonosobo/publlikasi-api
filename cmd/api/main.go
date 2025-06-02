@@ -42,7 +42,9 @@ func main() {
 	if err := db.AutoMigrate(
 		entities.ReportType{},
 		entities.Report{},
-		entities.News{}); err != nil {
+		entities.News{},
+		entities.Announcement{},
+	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
 
@@ -85,11 +87,13 @@ func main() {
 	reportTypeRepo := repositories.NewReportType()
 	reportRepo := repositories.NewReport()
 	newsRepo := repositories.NewNews()
+	announcementRepo := repositories.NewAnnouncement()
 
 	// init service
 	reportTypeService := services.NewReportType(db, reportTypeRepo)
 	reportService := services.NewReport(db, reportRepo, reportTypeRepo, s3Storage)
 	newsService := services.NewNews(db, newsRepo, s3Storage)
+	announcementServce := services.NewAnnouncement(db, announcementRepo)
 
 	// validator
 	validator := validator.NewValidator()
@@ -104,6 +108,7 @@ func main() {
 	routes.RegisterReportTypeRouter(v1, reportTypeService, validator)
 	routes.RegisterReportRouter(v1, reportService, validator)
 	routes.RegisterNewsRouter(v1, newsService, validator)
+	routes.RegisterAnnouncementRouter(v1, announcementServce, validator)
 
 	// make server
 	log.Printf("Server running on port %s", cfg.App.Port)
