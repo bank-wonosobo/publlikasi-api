@@ -20,4 +20,8 @@ func RegisterAnnouncementRouter(router fiber.Router, service services.Announceme
 	admin.Post("/", handler.Create)
 	admin.Put("/:id", handler.Update)
 	admin.Delete("/:id", handler.Delete)
+	admin.Put("/:id/approve", handler.Approve)
+	admin.Put("/:id/archive", handler.Archive)
+	admin.Get("/:id", handler.Detail)
+
 }

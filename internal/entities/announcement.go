@@ -1,6 +1,8 @@
 package entities
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -25,6 +27,8 @@ type Announcement struct {
 	AttachmentUrl  *string // file attachment (pdf / image)
 	IsActive       bool
 	Status         Status
+	ApprovedBy     *string
+	PublishedAt    *time.Time
 }
 
 // BeforeCreate hook to set UUID

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"mime/multipart"
+	"time"
 
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
@@ -17,6 +18,9 @@ type AnnouncementService interface {
 	Create(ctx context.Context, request *dto.AnnouncementCreateReq, file *multipart.FileHeader) (*dto.AnnouncementResponse, error)
 	Update(ctx context.Context, request *dto.AnnouncementUpdateReq, file *multipart.FileHeader, id string) (*dto.AnnouncementResponse, error)
 	Delete(ctx context.Context, id string) error
+	Approve(ctx context.Context, id string) (*dto.AnnouncementResponse, error)
+	Archive(ctx context.Context, id string) (*dto.AnnouncementResponse, error)
+	Detail(ctx context.Context, id string) (*dto.AnnouncementResponse, error)
 }
 
 type announcementService struct {
@@ -146,6 +150,65 @@ func (a *announcementService) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+// Approve implements AnnouncementService.
+func (a *announcementService) Approve(ctx context.Context, id string) (*dto.AnnouncementResponse, error) {
+	// get news type by id
+	announcement, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	if err != nil {
+		return nil, errors.New("pengumuman tidak ditemukan")
+	}
+
+	// update announcement
+	now := time.Now()
+	userApprover := "user approver"
+
+	announcement.Status = entities.Published
+	announcement.PublishedAt = &now
+	announcement.ApprovedBy = &userApprover
+	result, err := a.announcementRepo.Update(ctx, a.db, announcement)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	announcementResult := toAnnouncementResponse(*result)
+	return &announcementResult, nil
+}
+
+// Archive implements AnnouncementService.
+func (a *announcementService) Archive(ctx context.Context, id string) (*dto.AnnouncementResponse, error) {
+	// get news type by id
+	announcement, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	if err != nil {
+		return nil, errors.New("pengumuman tidak ditemukan")
+	}
+
+	// update announcement
+
+	announcement.Status = entities.Archived
+	result, err := a.announcementRepo.Update(ctx, a.db, announcement)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	announcementResult := toAnnouncementResponse(*result)
+	return &announcementResult, nil
+}
+
+// Detail implements AnnouncementService.
+func (a *announcementService) Detail(ctx context.Context, id string) (*dto.AnnouncementResponse, error) {
+	news, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	announcementResult := toAnnouncementResponse(*news)
+
+	return &announcementResult, nil
+}
+
 func toAnnouncementResponse(a entities.Announcement) dto.AnnouncementResponse {
 	return dto.AnnouncementResponse{
 		ID:             a.ID,
@@ -158,6 +221,8 @@ func toAnnouncementResponse(a entities.Announcement) dto.AnnouncementResponse {
 		AttachmentUrl:  a.AttachmentUrl,
 		IsActive:       a.IsActive,
 		Status:         string(a.Status),
+		ApprovedBy:     a.ApprovedBy,
+		PublishedAt:    a.PublishedAt,
 	}
 }
 

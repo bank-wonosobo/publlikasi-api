@@ -110,3 +110,42 @@ func (h *AnnouncementHandler) Delete(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(id))
 }
+
+func (h *AnnouncementHandler) Approve(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.service.Approve(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
+func (h *AnnouncementHandler) Archive(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.service.Archive(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}
+
+func (h *AnnouncementHandler) Detail(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.service.Detail(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+}

@@ -1,5 +1,7 @@
 package dto
 
+import "time"
+
 type AnnouncementGetQueryParams struct {
 	Key            string `query:"key"`
 	TargetAudience string `query:"target_audience"`
@@ -28,14 +30,18 @@ type AnnouncementUpdateReq struct {
 }
 
 type AnnouncementResponse struct {
-	ID             string  `json:"id"`
-	Title          string  `json:"title"`
-	Content        string  `json:"content"`
-	Author         string  `json:"author"`
-	TargetAudience string  `json:"target_audience"`
-	StartDate      string  `json:"start_date"`
-	EndDate        string  `json:"end_date"`
-	AttachmentUrl  *string `json:"attachment_url"`
-	IsActive       bool    `json:"is_active"`
-	Status         string  `json:"status"`
+	ID             string     `json:"id"`
+	Title          string     `json:"title"`
+	Content        string     `json:"content"`
+	Author         string     `json:"author"`
+	TargetAudience string     `json:"target_audience"`
+	StartDate      string     `json:"start_date"`
+	EndDate        string     `json:"end_date"`
+	AttachmentUrl  *string    `json:"attachment_url"`
+	IsActive       bool       `json:"is_active"`
+	PublishedAt    *time.Time `json:"published_at"`
+	Status         string     `json:"status"`
+	ApprovedBy     *string    `json:"approved_by"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
 }
