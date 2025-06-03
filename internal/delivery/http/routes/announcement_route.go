@@ -19,4 +19,5 @@ func RegisterAnnouncementRouter(router fiber.Router, service services.Announceme
 	admin.Get("/", handler.Index)
 	admin.Post("/", handler.Create)
 	admin.Put("/:id", handler.Update)
+	admin.Delete("/:id", handler.Delete)
 }

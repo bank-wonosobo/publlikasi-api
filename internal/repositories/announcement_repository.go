@@ -12,6 +12,7 @@ type AnnouncementRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, announcement *entities.Announcement) (*entities.Announcement, error)
 	GetAll(ctx context.Context, tx *gorm.DB, params *dto.AnnouncementGetQueryParams, offsite int) ([]entities.Announcement, int64, error)
 	Update(ctx context.Context, tx *gorm.DB, news *entities.Announcement) (*entities.Announcement, error)
+	Delete(ctx context.Context, tx *gorm.DB, news *entities.Announcement) error
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Announcement, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.Announcement, error)
 }
@@ -91,4 +92,14 @@ func (a *announcementRepository) Update(ctx context.Context, tx *gorm.DB, announ
 	}
 
 	return announcement, nil
+}
+
+// Delete implements AnnouncementRepository.
+func (a *announcementRepository) Delete(ctx context.Context, tx *gorm.DB, news *entities.Announcement) error {
+	err := tx.WithContext(ctx).Delete(&news).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

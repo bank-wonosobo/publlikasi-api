@@ -16,6 +16,7 @@ type AnnouncementService interface {
 	Index(ctx context.Context, param *dto.AnnouncementGetQueryParams) ([]dto.AnnouncementResponse, int64, error)
 	Create(ctx context.Context, request *dto.AnnouncementCreateReq, file *multipart.FileHeader) (*dto.AnnouncementResponse, error)
 	Update(ctx context.Context, request *dto.AnnouncementUpdateReq, file *multipart.FileHeader, id string) (*dto.AnnouncementResponse, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type announcementService struct {
@@ -127,6 +128,22 @@ func (a *announcementService) Update(ctx context.Context, request *dto.Announcem
 	// return result
 	announcementResult := toAnnouncementResponse(*result)
 	return &announcementResult, nil
+}
+
+// Delete implements AnnouncementService.
+func (a *announcementService) Delete(ctx context.Context, id string) error {
+	// get news  by id
+	news, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	if err != nil {
+		return errors.New("pengumuman tidak ditemukan")
+	}
+
+	err = a.announcementRepo.Delete(ctx, a.db, news)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func toAnnouncementResponse(a entities.Announcement) dto.AnnouncementResponse {
