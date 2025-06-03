@@ -11,6 +11,7 @@ import (
 type AnnouncementRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, announcement *entities.Announcement) (*entities.Announcement, error)
 	GetAll(ctx context.Context, tx *gorm.DB, params *dto.AnnouncementGetQueryParams, offsite int) ([]entities.Announcement, int64, error)
+	Update(ctx context.Context, tx *gorm.DB, news *entities.Announcement) (*entities.Announcement, error)
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Announcement, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.Announcement, error)
 }
@@ -57,7 +58,7 @@ func (a *announcementRepository) GetAll(ctx context.Context, tx *gorm.DB, params
 	query := tx.Model(&entities.Announcement{})
 
 	if params.Key != "" {
-		query = query.Where("title = ?", params.Key).Or("content = ?", params.Key)
+		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("content ILIKE ?", "%"+params.Key+"%")
 	}
 
 	if params.TargetAudience != "" {
@@ -80,4 +81,14 @@ func (a *announcementRepository) GetAll(ctx context.Context, tx *gorm.DB, params
 	}
 
 	return result, total, nil
+}
+
+// Update implements AnnouncementRepository.
+func (a *announcementRepository) Update(ctx context.Context, tx *gorm.DB, announcement *entities.Announcement) (*entities.Announcement, error) {
+	err := tx.WithContext(ctx).Save(&announcement).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return announcement, nil
 }

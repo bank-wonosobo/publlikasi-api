@@ -10,9 +10,17 @@ type AnnouncementGetQueryParams struct {
 }
 
 type AnnouncementCreateReq struct {
+	Title          string `json:"title" form:"title" validate:"required"`
+	Content        string `json:"content" form:"content" validate:"required"`
+	TargetAudience string `json:"target_audience" form:"target_audience" validate:"required"`
+	StartDate      string `json:"start_date" form:"start_date" validate:"required"`
+	EndDate        string `json:"end_date" form:"end_date" validate:"required"`
+	Attachment     string `json:"attachment" form:"attachment"`
+}
+
+type AnnouncementUpdateReq struct {
 	Title          string  `json:"title" form:"title" validate:"required"`
 	Content        string  `json:"content" form:"content" validate:"required"`
-	Author         string  `json:"author" form:"author" validate:"required"`
 	TargetAudience string  `json:"target_audience" form:"target_audience" validate:"required"`
 	StartDate      string  `json:"start_date" form:"start_date" validate:"required"`
 	EndDate        string  `json:"end_date" form:"end_date" validate:"required"`

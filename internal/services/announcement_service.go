@@ -15,6 +15,7 @@ import (
 type AnnouncementService interface {
 	Index(ctx context.Context, param *dto.AnnouncementGetQueryParams) ([]dto.AnnouncementResponse, int64, error)
 	Create(ctx context.Context, request *dto.AnnouncementCreateReq, file *multipart.FileHeader) (*dto.AnnouncementResponse, error)
+	Update(ctx context.Context, request *dto.AnnouncementUpdateReq, file *multipart.FileHeader, id string) (*dto.AnnouncementResponse, error)
 }
 
 type announcementService struct {
@@ -92,6 +93,40 @@ func (a *announcementService) Create(ctx context.Context, request *dto.Announcem
 	// return result
 	announcementRes := toAnnouncementResponse(*result)
 	return &announcementRes, nil
+}
+
+// Update implements AnnouncementService.
+func (a *announcementService) Update(ctx context.Context, request *dto.AnnouncementUpdateReq, file *multipart.FileHeader, id string) (*dto.AnnouncementResponse, error) {
+	// check news type id
+	announcement, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("announcement id tidak ditemukan")
+	}
+
+	// update report type
+	announcement.Title = request.Title
+	announcement.Author = "user login edited"
+	announcement.Content = request.Content
+	announcement.StartDate = request.StartDate
+	announcement.EndDate = request.EndDate
+
+	if file != nil {
+		// upload file
+		attachmentUrl, err := a.s3.UploadFileRename(file, "announcements/attachment/", nil)
+		if err != nil {
+			return nil, err
+		}
+		announcement.AttachmentUrl = &attachmentUrl
+	}
+
+	result, err := a.announcementRepo.Update(ctx, a.db, announcement)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	announcementResult := toAnnouncementResponse(*result)
+	return &announcementResult, nil
 }
 
 func toAnnouncementResponse(a entities.Announcement) dto.AnnouncementResponse {
