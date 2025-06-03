@@ -5,8 +5,7 @@ import (
 	"errors"
 	"mime/multipart"
 
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/repositories"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/storage"
@@ -14,14 +13,14 @@ import (
 )
 
 type ReportService interface {
-	Index(ctx context.Context, params *request.ReportGetQueryParams) ([]response.ReportResponse, int64, error)
-	Create(ctx context.Context, req *request.ReportCreateRequest, file *multipart.FileHeader) (*response.ReportResponse, error)
-	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error)
-	Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error)
+	Index(ctx context.Context, params *dto.ReportGetQueryParams) ([]dto.ReportResponse, int64, error)
+	Create(ctx context.Context, req *dto.ReportCreateRequest, file *multipart.FileHeader) (*dto.ReportResponse, error)
+	UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*dto.ReportResponse, error)
+	Update(ctx context.Context, req *dto.ReportUpdateRequest, id string) (*dto.ReportResponse, error)
 	Delete(ctx context.Context, id string) error
-	Approve(ctx context.Context, id string) (*response.ReportResponse, error)
-	Archive(ctx context.Context, id string) (*response.ReportResponse, error)
-	GetByReportType(ctx context.Context, params *request.ReportGetQueryParams, reportTypeID int) (*response.ReportPaginateResponse, error)
+	Approve(ctx context.Context, id string) (*dto.ReportResponse, error)
+	Archive(ctx context.Context, id string) (*dto.ReportResponse, error)
+	GetByReportType(ctx context.Context, params *dto.ReportGetQueryParams, reportTypeID int) (*dto.ReportPaginateResponse, error)
 }
 
 type reportService struct {
@@ -45,7 +44,7 @@ func NewReport(db *gorm.DB,
 }
 
 // Index implements ReportService.
-func (r *reportService) Index(ctx context.Context, params *request.ReportGetQueryParams) ([]response.ReportResponse, int64, error) {
+func (r *reportService) Index(ctx context.Context, params *dto.ReportGetQueryParams) ([]dto.ReportResponse, int64, error) {
 	// Set default values
 	if params.Page < 1 {
 		params.Page = 1
@@ -70,7 +69,7 @@ func (r *reportService) Index(ctx context.Context, params *request.ReportGetQuer
 }
 
 // Create implements ReportService.
-func (r *reportService) Create(ctx context.Context, req *request.ReportCreateRequest, file *multipart.FileHeader) (*response.ReportResponse, error) {
+func (r *reportService) Create(ctx context.Context, req *dto.ReportCreateRequest, file *multipart.FileHeader) (*dto.ReportResponse, error) {
 	// check if title exist
 	_, err := r.reportRepo.FindByTitle(ctx, r.db, req.Title)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -113,7 +112,7 @@ func (r *reportService) Create(ctx context.Context, req *request.ReportCreateReq
 }
 
 // UploadFile implements ReportService.
-func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*response.ReportResponse, error) {
+func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*dto.ReportResponse, error) {
 	// check report id
 	report, err := r.reportRepo.FindByID(ctx, r.db, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -143,7 +142,7 @@ func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHead
 }
 
 // Update implements ReportService.
-func (r *reportService) Update(ctx context.Context, req *request.ReportUpdateRequest, id string) (*response.ReportResponse, error) {
+func (r *reportService) Update(ctx context.Context, req *dto.ReportUpdateRequest, id string) (*dto.ReportResponse, error) {
 	// get report type by id
 	report, err := r.reportRepo.FindByID(ctx, r.db, id)
 	if err != nil {
@@ -193,7 +192,7 @@ func (r *reportService) Delete(ctx context.Context, id string) error {
 }
 
 // Archive implements ReportService.
-func (r *reportService) Archive(ctx context.Context, id string) (*response.ReportResponse, error) {
+func (r *reportService) Archive(ctx context.Context, id string) (*dto.ReportResponse, error) {
 	// get report type by id
 	report, err := r.reportRepo.FindByID(ctx, r.db, id)
 	if err != nil {
@@ -213,7 +212,7 @@ func (r *reportService) Archive(ctx context.Context, id string) (*response.Repor
 }
 
 // Upprove implements ReportService.
-func (r *reportService) Approve(ctx context.Context, id string) (*response.ReportResponse, error) {
+func (r *reportService) Approve(ctx context.Context, id string) (*dto.ReportResponse, error) {
 	// get report type by id
 	report, err := r.reportRepo.FindByID(ctx, r.db, id)
 	if err != nil {
@@ -235,7 +234,7 @@ func (r *reportService) Approve(ctx context.Context, id string) (*response.Repor
 }
 
 // GetByReportType implements ReportService.
-func (r *reportService) GetByReportType(ctx context.Context, params *request.ReportGetQueryParams, reportTypeID int) (*response.ReportPaginateResponse, error) {
+func (r *reportService) GetByReportType(ctx context.Context, params *dto.ReportGetQueryParams, reportTypeID int) (*dto.ReportPaginateResponse, error) {
 	// Set default values
 	if params.Page < 1 {
 		params.Page = 1
@@ -256,7 +255,7 @@ func (r *reportService) GetByReportType(ctx context.Context, params *request.Rep
 	// return result
 	reportResponse := toReportResponses(result)
 
-	reportPaginateResponse := response.ReportPaginateResponse{
+	reportPaginateResponse := dto.ReportPaginateResponse{
 		Reports:   reportResponse,
 		Page:      params.Page,
 		Limit:     params.Limit,
@@ -267,8 +266,8 @@ func (r *reportService) GetByReportType(ctx context.Context, params *request.Rep
 	return &reportPaginateResponse, nil
 }
 
-func toReportResponse(report entities.Report) (result response.ReportResponse) {
-	result = response.ReportResponse{
+func toReportResponse(report entities.Report) (result dto.ReportResponse) {
+	result = dto.ReportResponse{
 		ID:          report.ID,
 		Title:       report.Title,
 		Description: report.Description,
@@ -287,8 +286,8 @@ func toReportResponse(report entities.Report) (result response.ReportResponse) {
 	return result
 }
 
-func toReportResponses(reports []entities.Report) []response.ReportResponse {
-	var reportResponse []response.ReportResponse
+func toReportResponses(reports []entities.Report) []dto.ReportResponse {
+	var reportResponse []dto.ReportResponse
 	for _, report := range reports {
 		reportResponse = append(reportResponse, toReportResponse(report))
 	}

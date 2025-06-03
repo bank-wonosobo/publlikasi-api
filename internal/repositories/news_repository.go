@@ -3,14 +3,14 @@ package repositories
 import (
 	"context"
 
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"gorm.io/gorm"
 )
 
 type NewsRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, news *entities.News) (*entities.News, error)
-	GetAll(ctx context.Context, tx *gorm.DB, params *request.NewsGetQueryParams, offsite int) ([]entities.News, int64, error)
+	GetAll(ctx context.Context, tx *gorm.DB, params *dto.NewsGetQueryParams, offsite int) ([]entities.News, int64, error)
 	Update(ctx context.Context, tx *gorm.DB, news *entities.News) (*entities.News, error)
 	Delete(ctx context.Context, tx *gorm.DB, news *entities.News) error
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.News, error)
@@ -36,7 +36,7 @@ func (n *newsRepository) Save(ctx context.Context, tx *gorm.DB, news *entities.N
 }
 
 // GetAll implements NewsRepository.
-func (n *newsRepository) GetAll(ctx context.Context, tx *gorm.DB, params *request.NewsGetQueryParams, offsite int) (result []entities.News, total int64, err error) {
+func (n *newsRepository) GetAll(ctx context.Context, tx *gorm.DB, params *dto.NewsGetQueryParams, offsite int) (result []entities.News, total int64, err error) {
 	query := tx.Model(&entities.News{})
 
 	if params.Title != "" {

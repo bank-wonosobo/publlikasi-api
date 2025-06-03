@@ -3,19 +3,19 @@ package repositories
 import (
 	"context"
 
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"gorm.io/gorm"
 )
 
 type ReportRepository interface {
 	Save(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
-	GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offsite int) ([]entities.Report, int64, error)
+	GetAll(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, offsite int) ([]entities.Report, int64, error)
 	Update(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
 	Delete(ctx context.Context, tx *gorm.DB, report *entities.Report) error
 	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Report, error)
 	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.Report, error)
-	GetByReportType(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, reportTypeID int, offsite int) ([]entities.Report, int64, error)
+	GetByReportType(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, reportTypeID int, offsite int) ([]entities.Report, int64, error)
 	GetByNameDescYear()
 }
 
@@ -27,7 +27,7 @@ func NewReport() ReportRepository {
 }
 
 // GetAll implements ReportRepository.
-func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, offsite int) (result []entities.Report, total int64, err error) {
+func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, offsite int) (result []entities.Report, total int64, err error) {
 	query := tx.Model(&entities.Report{})
 
 	if params.Title != "" {
@@ -103,7 +103,7 @@ func (r *reportRepository) Delete(ctx context.Context, tx *gorm.DB, report *enti
 }
 
 // GetByReportType implements ReportRepository.
-func (r *reportRepository) GetByReportType(ctx context.Context, tx *gorm.DB, params *request.ReportGetQueryParams, reportTypeID int, offsite int) (result []entities.Report, total int64, err error) {
+func (r *reportRepository) GetByReportType(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, reportTypeID int, offsite int) (result []entities.Report, total int64, err error) {
 	query := tx.Model(&entities.Report{})
 
 	query = query.Where("report_type_id = ?", reportTypeID)

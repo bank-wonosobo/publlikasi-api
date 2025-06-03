@@ -3,8 +3,7 @@ package handlers
 import (
 	"strconv"
 
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/validator"
 	"github.com/gofiber/fiber/v2"
@@ -26,33 +25,33 @@ func (h *ReportTypeHandler) Index(c *fiber.Ctx) error {
 	// call service
 	result, err := h.reportTypeService.Index(c.Context())
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 // create handler
 func (h *ReportTypeHandler) Create(c *fiber.Ctx) error {
-	var request request.ReportTypeCreateRequest
+	var request dto.ReportTypeCreateRequest
 
 	// parse request
 	if err := c.BodyParser(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// validate request
 	if err := h.validator.Validate(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// call service
 	result, err := h.reportTypeService.Create(c.Context(), &request)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 func (h *ReportTypeHandler) Update(c *fiber.Ctx) error {
@@ -64,24 +63,24 @@ func (h *ReportTypeHandler) Update(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid user ID")
 	}
 
-	var request request.ReportTypeCreateRequest
+	var request dto.ReportTypeCreateRequest
 	// parse request
 	if err := c.BodyParser(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// validate request
 	if err := h.validator.Validate(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// call service
 	result, err := h.reportTypeService.Update(c.Context(), &request, id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 func (h *ReportTypeHandler) Delete(c *fiber.Ctx) error {
@@ -95,8 +94,8 @@ func (h *ReportTypeHandler) Delete(c *fiber.Ctx) error {
 
 	err = h.reportTypeService.Delete(c.Context(), id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(id))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(id))
 }

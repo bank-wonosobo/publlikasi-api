@@ -3,8 +3,7 @@ package handlers
 import (
 	"strconv"
 
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/validator"
 	"github.com/gofiber/fiber/v2"
@@ -24,49 +23,49 @@ func NewReport(reportService services.ReportService, validator validator.Validat
 
 func (h *ReportHandler) Index(c *fiber.Ctx) error {
 	// parse params
-	var params request.ReportGetQueryParams
+	var params dto.ReportGetQueryParams
 	if err := c.QueryParser(&params); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// call service
 	result, total, err := h.reportService.Index(c.Context(), &params)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// calculate total page
 	totalPage := (total + int64(params.Limit) - 1) / int64(params.Limit)
 
 	// return result
-	return c.Status(fiber.StatusOK).JSON(response.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
+	return c.Status(fiber.StatusOK).JSON(dto.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
 }
 
 func (h *ReportHandler) Create(c *fiber.Ctx) error {
-	var request request.ReportCreateRequest
+	var request dto.ReportCreateRequest
 
 	// parse request
 	if err := c.BodyParser(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// validate request
 	if err := h.validator.Validate(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// get file
 	file, err := c.FormFile("file")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 	// call service
 	result, err := h.reportService.Create(c.Context(), &request, file)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 func (h *ReportHandler) UploadFile(c *fiber.Ctx) error {
@@ -76,38 +75,38 @@ func (h *ReportHandler) UploadFile(c *fiber.Ctx) error {
 	// get file
 	file, err := c.FormFile("file")
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// call service
 	result, err := h.reportService.UploadFile(c.Context(), file, id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 func (h *ReportHandler) Update(c *fiber.Ctx) error {
-	var request request.ReportUpdateRequest
+	var request dto.ReportUpdateRequest
 	id := c.Params("id")
 	// parse request
 	if err := c.BodyParser(&request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// validate request
 	if err := h.validator.Validate(request); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// call service
 	result, err := h.reportService.Update(c.Context(), &request, id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 func (h *ReportHandler) Delete(c *fiber.Ctx) error {
@@ -116,10 +115,10 @@ func (h *ReportHandler) Delete(c *fiber.Ctx) error {
 
 	err := h.reportService.Delete(c.Context(), id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(id))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(id))
 }
 
 func (h *ReportHandler) Approve(c *fiber.Ctx) error {
@@ -129,10 +128,10 @@ func (h *ReportHandler) Approve(c *fiber.Ctx) error {
 	// call service
 	result, err := h.reportService.Approve(c.Context(), id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 func (h *ReportHandler) Archive(c *fiber.Ctx) error {
@@ -142,10 +141,10 @@ func (h *ReportHandler) Archive(c *fiber.Ctx) error {
 	// call service
 	result, err := h.reportService.Archive(c.Context(), id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
 
 func (h *ReportHandler) GetByReportType(c *fiber.Ctx) error {
@@ -154,19 +153,19 @@ func (h *ReportHandler) GetByReportType(c *fiber.Ctx) error {
 
 	reportTypeID, err := strconv.Atoi(idParams)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 	// parse params
-	var params request.ReportGetQueryParams
+	var params dto.ReportGetQueryParams
 	if err := c.QueryParser(&params); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
 	// call service
 	result, err := h.reportService.GetByReportType(c.Context(), &params, reportTypeID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(response.CreateReponseError(err.Error()))
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 
-	return c.Status(fiber.StatusOK).JSON(response.CreateReponseSuccess(result))
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }

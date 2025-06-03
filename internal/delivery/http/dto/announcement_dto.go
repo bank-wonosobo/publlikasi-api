@@ -2,6 +2,7 @@ package dto
 
 import "time"
 
+// request
 type AnnouncementGetQueryParams struct {
 	Key            string `query:"key"`
 	TargetAudience string `query:"target_audience"`
@@ -29,6 +30,7 @@ type AnnouncementUpdateReq struct {
 	Attachment     *string `json:"attachment" form:"attachment"`
 }
 
+// response
 type AnnouncementResponse struct {
 	ID             string     `json:"id"`
 	Title          string     `json:"title"`

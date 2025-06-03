@@ -4,17 +4,16 @@ import (
 	"context"
 	"errors"
 
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/repositories"
 	"gorm.io/gorm"
 )
 
 type ReportTypeService interface {
-	Index(ctx context.Context) ([]response.ReportTypeResponse, error)
-	Create(ctx context.Context, req *request.ReportTypeCreateRequest) (*response.ReportTypeResponse, error)
-	Update(ctx context.Context, req *request.ReportTypeCreateRequest, id int) (*response.ReportTypeResponse, error)
+	Index(ctx context.Context) ([]dto.ReportTypeResponse, error)
+	Create(ctx context.Context, req *dto.ReportTypeCreateRequest) (*dto.ReportTypeResponse, error)
+	Update(ctx context.Context, req *dto.ReportTypeCreateRequest, id int) (*dto.ReportTypeResponse, error)
 	Delete(ctx context.Context, id int) error
 }
 
@@ -32,7 +31,7 @@ func NewReportType(db *gorm.DB,
 }
 
 // Index implements ReportTypeService.
-func (r *reportTypeService) Index(ctx context.Context) ([]response.ReportTypeResponse, error) {
+func (r *reportTypeService) Index(ctx context.Context) ([]dto.ReportTypeResponse, error) {
 	// get all
 	result, err := r.reportTypeRepo.FindAll(ctx, r.db)
 	if err != nil {
@@ -46,7 +45,7 @@ func (r *reportTypeService) Index(ctx context.Context) ([]response.ReportTypeRes
 }
 
 // Create implements ReportTypeService.
-func (r *reportTypeService) Create(ctx context.Context, req *request.ReportTypeCreateRequest) (*response.ReportTypeResponse, error) {
+func (r *reportTypeService) Create(ctx context.Context, req *dto.ReportTypeCreateRequest) (*dto.ReportTypeResponse, error) {
 	// check if name exist
 	_, err := r.reportTypeRepo.FindByName(ctx, r.db, req.Name)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -69,7 +68,7 @@ func (r *reportTypeService) Create(ctx context.Context, req *request.ReportTypeC
 }
 
 // Update implements ReportTypeService.
-func (r *reportTypeService) Update(ctx context.Context, req *request.ReportTypeCreateRequest, id int) (*response.ReportTypeResponse, error) {
+func (r *reportTypeService) Update(ctx context.Context, req *dto.ReportTypeCreateRequest, id int) (*dto.ReportTypeResponse, error) {
 	// get report type by id
 	reportType, err := r.reportTypeRepo.FindByID(ctx, r.db, id)
 	if err != nil {
@@ -106,8 +105,8 @@ func (r *reportTypeService) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-func toReportTypeResponse(reportType entities.ReportType) (result response.ReportTypeResponse) {
-	result = response.ReportTypeResponse{
+func toReportTypeResponse(reportType entities.ReportType) (result dto.ReportTypeResponse) {
+	result = dto.ReportTypeResponse{
 		ID:          reportType.ID,
 		Name:        reportType.Name,
 		Description: reportType.Description,
@@ -118,8 +117,8 @@ func toReportTypeResponse(reportType entities.ReportType) (result response.Repor
 	return result
 }
 
-func toReportTypeResponses(reportTypes []entities.ReportType) []response.ReportTypeResponse {
-	var reportTypeResponse []response.ReportTypeResponse
+func toReportTypeResponses(reportTypes []entities.ReportType) []dto.ReportTypeResponse {
+	var reportTypeResponse []dto.ReportTypeResponse
 	for _, reportType := range reportTypes {
 		reportTypeResponse = append(reportTypeResponse, toReportTypeResponse(reportType))
 	}

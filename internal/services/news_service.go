@@ -6,8 +6,7 @@ import (
 	"mime/multipart"
 	"time"
 
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/request"
-	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto/response"
+	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/repositories"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/storage"
@@ -15,14 +14,14 @@ import (
 )
 
 type NewsService interface {
-	Create(ctx context.Context, request *request.NewsCreateRequest, file *multipart.FileHeader) (*response.NewsResponse, error)
-	Index(ctx context.Context, params *request.NewsGetQueryParams) ([]response.NewsResponse, int64, error)
-	Update(ctx context.Context, request *request.NewsUpdateRequest, file *multipart.FileHeader, id string) (*response.NewsResponse, error)
+	Create(ctx context.Context, request *dto.NewsCreateRequest, file *multipart.FileHeader) (*dto.NewsResponse, error)
+	Index(ctx context.Context, params *dto.NewsGetQueryParams) ([]dto.NewsResponse, int64, error)
+	Update(ctx context.Context, request *dto.NewsUpdateRequest, file *multipart.FileHeader, id string) (*dto.NewsResponse, error)
 	Delete(ctx context.Context, id string) error
-	Approve(ctx context.Context, id string) (*response.NewsResponse, error)
-	Archive(ctx context.Context, id string) (*response.NewsResponse, error)
-	Detail(ctx context.Context, id string) (*response.NewsResponse, error)
-	DetailBySlug(ctx context.Context, slug string) (*response.NewsResponse, error)
+	Approve(ctx context.Context, id string) (*dto.NewsResponse, error)
+	Archive(ctx context.Context, id string) (*dto.NewsResponse, error)
+	Detail(ctx context.Context, id string) (*dto.NewsResponse, error)
+	DetailBySlug(ctx context.Context, slug string) (*dto.NewsResponse, error)
 }
 
 type newsService struct {
@@ -40,7 +39,7 @@ func NewNews(db *gorm.DB, newsRepo repositories.NewsRepository, s3 storage.S3Sto
 }
 
 // Create implements NewsService.
-func (n *newsService) Create(ctx context.Context, req *request.NewsCreateRequest, file *multipart.FileHeader) (*response.NewsResponse, error) {
+func (n *newsService) Create(ctx context.Context, req *dto.NewsCreateRequest, file *multipart.FileHeader) (*dto.NewsResponse, error) {
 	// check if title exist
 	_, err := n.newsRepo.FindByTitle(ctx, n.db, req.Title)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -79,7 +78,7 @@ func (n *newsService) Create(ctx context.Context, req *request.NewsCreateRequest
 }
 
 // Index implements NewsService.
-func (n *newsService) Index(ctx context.Context, params *request.NewsGetQueryParams) ([]response.NewsResponse, int64, error) {
+func (n *newsService) Index(ctx context.Context, params *dto.NewsGetQueryParams) ([]dto.NewsResponse, int64, error) {
 	// Set default values
 	if params.Page < 1 {
 		params.Page = 1
@@ -104,7 +103,7 @@ func (n *newsService) Index(ctx context.Context, params *request.NewsGetQueryPar
 }
 
 // Update implements NewsService.
-func (n *newsService) Update(ctx context.Context, request *request.NewsUpdateRequest, file *multipart.FileHeader, id string) (*response.NewsResponse, error) {
+func (n *newsService) Update(ctx context.Context, request *dto.NewsUpdateRequest, file *multipart.FileHeader, id string) (*dto.NewsResponse, error) {
 	// check news type id
 	news, err := n.newsRepo.FindByID(ctx, n.db, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -136,7 +135,7 @@ func (n *newsService) Update(ctx context.Context, request *request.NewsUpdateReq
 }
 
 // Approve implements NewsService.
-func (n *newsService) Approve(ctx context.Context, id string) (*response.NewsResponse, error) {
+func (n *newsService) Approve(ctx context.Context, id string) (*dto.NewsResponse, error) {
 	// get news type by id
 	news, err := n.newsRepo.FindByID(ctx, n.db, id)
 	if err != nil {
@@ -161,7 +160,7 @@ func (n *newsService) Approve(ctx context.Context, id string) (*response.NewsRes
 }
 
 // Archive implements NewsService.
-func (n *newsService) Archive(ctx context.Context, id string) (*response.NewsResponse, error) {
+func (n *newsService) Archive(ctx context.Context, id string) (*dto.NewsResponse, error) {
 	// get news type by id
 	news, err := n.newsRepo.FindByID(ctx, n.db, id)
 	if err != nil {
@@ -197,7 +196,7 @@ func (n *newsService) Delete(ctx context.Context, id string) error {
 }
 
 // Detail implements NewsService.
-func (n *newsService) Detail(ctx context.Context, id string) (*response.NewsResponse, error) {
+func (n *newsService) Detail(ctx context.Context, id string) (*dto.NewsResponse, error) {
 	news, err := n.newsRepo.FindByID(ctx, n.db, id)
 	if err != nil {
 		return nil, err
@@ -210,7 +209,7 @@ func (n *newsService) Detail(ctx context.Context, id string) (*response.NewsResp
 }
 
 // DetailBySlug implements NewsService.
-func (n *newsService) DetailBySlug(ctx context.Context, slug string) (*response.NewsResponse, error) {
+func (n *newsService) DetailBySlug(ctx context.Context, slug string) (*dto.NewsResponse, error) {
 	news, err := n.newsRepo.FindBySlug(ctx, n.db, slug)
 	if err != nil {
 		return nil, err
@@ -222,8 +221,8 @@ func (n *newsService) DetailBySlug(ctx context.Context, slug string) (*response.
 	return &newsReponse, nil
 }
 
-func toNewsResponse(news entities.News) (result response.NewsResponse) {
-	result = response.NewsResponse{
+func toNewsResponse(news entities.News) (result dto.NewsResponse) {
+	result = dto.NewsResponse{
 		ID:          news.ID,
 		Title:       news.Title,
 		Slug:        news.Slug,
@@ -240,8 +239,8 @@ func toNewsResponse(news entities.News) (result response.NewsResponse) {
 	return result
 }
 
-func toNewsResponses(news []entities.News) []response.NewsResponse {
-	var newsReponses []response.NewsResponse
+func toNewsResponses(news []entities.News) []dto.NewsResponse {
+	var newsReponses []dto.NewsResponse
 	for _, newsItem := range news {
 		newsReponses = append(newsReponses, toNewsResponse(newsItem))
 	}
