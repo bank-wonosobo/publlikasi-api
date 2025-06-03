@@ -62,10 +62,6 @@ func (a *announcementRepository) GetAll(ctx context.Context, tx *gorm.DB, params
 		query = query.Where("target_audience = ?", params.TargetAudience)
 	}
 
-	if params.IsActive != 0 {
-		query = query.Where("is_active = ?", params.IsActive)
-	}
-
 	if params.Status != "" {
 		query = query.Where("status = ?", params.Status)
 	}

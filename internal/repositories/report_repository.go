@@ -30,16 +30,16 @@ func NewReport() ReportRepository {
 func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, offsite int) (result []entities.Report, total int64, err error) {
 	query := tx.Model(&entities.Report{})
 
-	if params.Title != "" {
-		query = query.Where("title ILIKE ?", "%"+params.Title+"%")
-	}
-
-	if params.Description != "" {
-		query = query.Where("description ILIKE ?", "%"+params.Description+"%")
+	if params.Status != "" {
+		query = query.Where("status = ?", params.Status)
 	}
 
 	if params.Year != 0 {
 		query = query.Where("year = ?", params.Year)
+	}
+
+	if params.Key != "" {
+		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("content ILIKE ?", "%"+params.Key+"%")
 	}
 
 	query.Count(&total)
@@ -108,16 +108,16 @@ func (r *reportRepository) GetByReportType(ctx context.Context, tx *gorm.DB, par
 
 	query = query.Where("report_type_id = ?", reportTypeID)
 
-	if params.Title != "" {
-		query = query.Where("title ILIKE ?", "%"+params.Title+"%")
-	}
-
-	if params.Description != "" {
-		query = query.Where("description ILIKE ?", "%"+params.Description+"%")
+	if params.Status != "" {
+		query = query.Where("status = ?", params.Status)
 	}
 
 	if params.Year != 0 {
 		query = query.Where("year = ?", params.Year)
+	}
+
+	if params.Key != "" {
+		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("content ILIKE ?", "%"+params.Key+"%")
 	}
 
 	query.Count(&total)

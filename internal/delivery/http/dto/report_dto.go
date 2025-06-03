@@ -16,11 +16,11 @@ type ReportCreateRequest struct {
 }
 
 type ReportGetQueryParams struct {
-	Title       string `query:"title"`
-	Description string `query:"description"`
-	Year        int    `query:"year"`
-	Page        int    `query:"page"`
-	Limit       int    `query:"limit"`
+	Key    string `query:"key"`
+	Year   int    `query:"year"`
+	Status string `query:"status"`
+	Page   int    `query:"page"`
+	Limit  int    `query:"limit"`
 }
 
 type ReportUpdateRequest struct {

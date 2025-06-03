@@ -6,7 +6,6 @@ import "time"
 type AnnouncementGetQueryParams struct {
 	Key            string `query:"key"`
 	TargetAudience string `query:"target_audience"`
-	IsActive       int    `query:"is_active"`
 	Status         string `query:"status"`
 	Page           int    `query:"page"`
 	Limit          int    `query:"limit"`

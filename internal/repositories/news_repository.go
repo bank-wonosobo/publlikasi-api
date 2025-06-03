@@ -39,12 +39,12 @@ func (n *newsRepository) Save(ctx context.Context, tx *gorm.DB, news *entities.N
 func (n *newsRepository) GetAll(ctx context.Context, tx *gorm.DB, params *dto.NewsGetQueryParams, offsite int) (result []entities.News, total int64, err error) {
 	query := tx.Model(&entities.News{})
 
-	if params.Title != "" {
-		query = query.Where("title ILIKE ?", "%"+params.Title+"%")
+	if params.Status != "" {
+		query = query.Where("status = ?", params.Status)
 	}
 
-	if params.Content != "" {
-		query = query.Where("content ILIKE ?", "%"+params.Content+"%")
+	if params.Key != "" {
+		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("content ILIKE ?", "%"+params.Key+"%")
 	}
 
 	query.Count(&total)

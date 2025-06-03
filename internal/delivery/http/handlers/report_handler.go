@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
@@ -26,6 +27,11 @@ func (h *ReportHandler) Index(c *fiber.Ctx) error {
 	var params dto.ReportGetQueryParams
 	if err := c.QueryParser(&params); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	// get status publish
+	if strings.Split(c.Path(), "/")[3] != "admin" {
+		params.Status = "published"
 	}
 
 	// call service

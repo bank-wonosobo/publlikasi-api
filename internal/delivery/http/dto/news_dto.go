@@ -11,10 +11,10 @@ type NewsCreateRequest struct {
 }
 
 type NewsGetQueryParams struct {
-	Title   string `query:"title"`
-	Content string `query:"content"`
-	Page    int    `query:"page"`
-	Limit   int    `query:"limit"`
+	Key    string `query:"key"`
+	Status string `query:"status"`
+	Page   int    `query:"page"`
+	Limit  int    `query:"limit"`
 }
 
 type NewsUpdateRequest struct {

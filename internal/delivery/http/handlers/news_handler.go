@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strings"
+
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/validator"
@@ -54,6 +56,10 @@ func (h *NewsHandler) GetAll(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
+	// get status publish
+	if strings.Split(c.Path(), "/")[3] != "admin" {
+		params.Status = "published"
+	}
 	// call service
 	result, total, err := h.newsService.Index(c.Context(), &params)
 	if err != nil {
