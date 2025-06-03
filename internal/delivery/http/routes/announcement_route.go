@@ -13,6 +13,7 @@ func RegisterAnnouncementRouter(router fiber.Router, service services.Announceme
 	// public routes
 	announcements := router.Group("/announcements")
 	announcements.Get("/", handler.Index)
+	announcements.Get("/:id", handler.Detail)
 
 	// admin routes
 	admin := router.Group("/admin/announcements")
