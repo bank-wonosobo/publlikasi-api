@@ -58,10 +58,6 @@ func (a *announcementRepository) FindByID(ctx context.Context, tx *gorm.DB, id s
 func (a *announcementRepository) GetAll(ctx context.Context, tx *gorm.DB, params *dto.AnnouncementGetQueryParams, offsite int) (result []entities.Announcement, total int64, err error) {
 	query := tx.Model(&entities.Announcement{})
 
-	if params.Key != "" {
-		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("content ILIKE ?", "%"+params.Key+"%")
-	}
-
 	if params.TargetAudience != "" {
 		query = query.Where("target_audience = ?", params.TargetAudience)
 	}
@@ -72,6 +68,10 @@ func (a *announcementRepository) GetAll(ctx context.Context, tx *gorm.DB, params
 
 	if params.Status != "" {
 		query = query.Where("status = ?", params.Status)
+	}
+
+	if params.Key != "" {
+		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("content ILIKE ?", "%"+params.Key+"%")
 	}
 
 	query.Count(&total)
