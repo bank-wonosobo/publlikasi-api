@@ -14,6 +14,13 @@ type ProductCreateReq struct {
 	ProductCategory entities.ProductCategory `json:"product_category" validate:"required,must_category_product" form:"product_category"`
 }
 
+type ProductGetQueryParams struct {
+	Key      string `query:"key"`
+	Category string `query:"category"`
+	Page     int    `query:"page"`
+	Limit    int    `query:"limit"`
+}
+
 // response
 type ProductResponse struct {
 	ID              string    `json:"id"`

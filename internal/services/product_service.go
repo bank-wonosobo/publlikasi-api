@@ -14,7 +14,7 @@ import (
 
 type ProductService interface {
 	Create(ctx context.Context, req *dto.ProductCreateReq, file *multipart.FileHeader) (*dto.ProductResponse, error)
-	Index(ctx context.Context)
+	Index(ctx context.Context, params *dto.ProductGetQueryParams) ([]dto.ProductResponse, int64, error)
 	Update(ctx context.Context)
 	Delete(ctx context.Context)
 	Detail(ctx context.Context)
@@ -23,6 +23,31 @@ type ProductService interface {
 type productService struct {
 	productRepo repositories.ProductRepository
 	s3          storage.S3Storage
+}
+
+// Index implements ProductService.
+func (p *productService) Index(ctx context.Context, params *dto.ProductGetQueryParams) ([]dto.ProductResponse, int64, error) {
+	// Set default values
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 10
+	}
+
+	// set offset
+	offset := (params.Page - 1) * params.Limit
+
+	// get all data with total
+	result, total, err := p.productRepo.GetAll(ctx, params, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// return result
+	productResponse := toProductResponses(result)
+
+	return productResponse, total, nil
 }
 
 // Create implements ProductService.
@@ -68,11 +93,6 @@ func (p *productService) Detail(ctx context.Context) {
 	panic("unimplemented")
 }
 
-// Index implements ProductService.
-func (p *productService) Index(ctx context.Context) {
-	panic("unimplemented")
-}
-
 // Update implements ProductService.
 func (p *productService) Update(ctx context.Context) {
 	panic("unimplemented")
@@ -100,11 +120,11 @@ func toProductResponse(product entities.Product) (result dto.ProductResponse) {
 	return result
 }
 
-// func toProductResponses(news []entities.Product) []dto.NewsResponse {
-// 	var newsReponses []dto.NewsResponse
-// 	for _, newsItem := range news {
-// 		newsReponses = append(newsReponses, toNewsResponse(newsItem))
-// 	}
+func toProductResponses(news []entities.Product) []dto.ProductResponse {
+	var newsReponses []dto.ProductResponse
+	for _, newsItem := range news {
+		newsReponses = append(newsReponses, toProductResponse(newsItem))
+	}
 
-// 	return newsReponses
-// }
+	return newsReponses
+}

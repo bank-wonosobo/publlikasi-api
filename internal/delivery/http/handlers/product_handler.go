@@ -52,3 +52,23 @@ func (h *ProductHandler) Create(c *fiber.Ctx) error {
 	}
 	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
+
+func (h *ProductHandler) Index(c *fiber.Ctx) error {
+	// parse params
+	var params dto.ProductGetQueryParams
+	if err := c.QueryParser(&params); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	// call service
+	result, total, err := h.productService.Index(c.Context(), &params)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	// calculate total page
+	totalPage := (total + int64(params.Limit) - 1) / int64(params.Limit)
+
+	// return result
+	return c.Status(fiber.StatusOK).JSON(dto.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
+}
