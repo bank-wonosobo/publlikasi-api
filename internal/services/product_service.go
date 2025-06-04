@@ -15,7 +15,7 @@ import (
 type ProductService interface {
 	Create(ctx context.Context, req *dto.ProductCreateReq, file *multipart.FileHeader) (*dto.ProductResponse, error)
 	Index(ctx context.Context, params *dto.ProductGetQueryParams) ([]dto.ProductResponse, int64, error)
-	Update(ctx context.Context)
+	Update(ctx context.Context, req *dto.ProductUpdateReq, file *multipart.FileHeader, id string) (*dto.ProductResponse, error)
 	Delete(ctx context.Context)
 	Detail(ctx context.Context)
 }
@@ -23,6 +23,38 @@ type ProductService interface {
 type productService struct {
 	productRepo repositories.ProductRepository
 	s3          storage.S3Storage
+}
+
+// Update implements ProductService.
+func (p *productService) Update(ctx context.Context, req *dto.ProductUpdateReq, file *multipart.FileHeader, id string) (*dto.ProductResponse, error) {
+	// check news type id
+	product, err := p.productRepo.FindByID(ctx, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("news id tidak ditemukan")
+	}
+
+	// update report type
+	product.Name = req.Name
+	product.Description = req.Description
+	product.Tagline = req.Tagline
+	product.ProductCategory = req.ProductCategory
+	if file != nil {
+		// upload file
+		imageUrl, err := p.s3.UploadFileRename(file, "news/images/", nil)
+		if err != nil {
+			return nil, err
+		}
+		product.ImageUrl = imageUrl
+	}
+
+	result, err := p.productRepo.Save(ctx, product)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	productResponse := toProductResponse(*result)
+	return &productResponse, nil
 }
 
 // Index implements ProductService.
@@ -90,11 +122,6 @@ func (p *productService) Delete(ctx context.Context) {
 
 // Detail implements ProductService.
 func (p *productService) Detail(ctx context.Context) {
-	panic("unimplemented")
-}
-
-// Update implements ProductService.
-func (p *productService) Update(ctx context.Context) {
 	panic("unimplemented")
 }
 

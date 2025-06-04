@@ -12,10 +12,21 @@ type ProductRepository interface {
 	GetAll(ctx context.Context, params *dto.ProductGetQueryParams, offsite int) ([]entities.Product, int64, error)
 	FindByName(ctx context.Context, name string) (*entities.Product, error)
 	Save(ctx context.Context, product *entities.Product) (*entities.Product, error)
+	FindByID(ctx context.Context, id string) (*entities.Product, error)
 }
 
 type productRepository struct {
 	db *gorm.DB
+}
+
+// FindByID implements ProductRepository.
+func (p *productRepository) FindByID(ctx context.Context, id string) (result *entities.Product, err error) {
+	err = p.db.WithContext(ctx).Where("id = ?", id).First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // GetAll implements ProductRepository.
@@ -23,7 +34,7 @@ func (p *productRepository) GetAll(ctx context.Context, params *dto.ProductGetQu
 	query := p.db.Model(&entities.Product{})
 
 	if params.Category != "" {
-		query = query.Where("category_product = ?", params.Category)
+		query = query.Where("product_category = ?", params.Category)
 	}
 
 	if params.Key != "" {

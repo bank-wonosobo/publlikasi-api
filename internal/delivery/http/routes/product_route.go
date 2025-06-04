@@ -14,4 +14,5 @@ func RegisterProductRouter(router fiber.Router, service services.ProductService,
 	products := router.Group("/products")
 	products.Post("/", handler.Create)
 	products.Get("/", handler.Index)
+	products.Put("/:id", handler.Update)
 }

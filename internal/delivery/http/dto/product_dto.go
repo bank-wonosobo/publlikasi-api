@@ -14,6 +14,13 @@ type ProductCreateReq struct {
 	ProductCategory entities.ProductCategory `json:"product_category" validate:"required,must_category_product" form:"product_category"`
 }
 
+type ProductUpdateReq struct {
+	Name            string                   `json:"name" validate:"required" form:"name"`
+	Description     string                   `json:"description" validate:"required" form:"description"`
+	Image           *string                  `json:"image" form:"image"`
+	Tagline         string                   `json:"tagline" validate:"required" form:"tagline"`
+	ProductCategory entities.ProductCategory `json:"product_category" validate:"required,must_category_product" form:"product_category"`
+}
 type ProductGetQueryParams struct {
 	Key      string `query:"key"`
 	Category string `query:"category"`
