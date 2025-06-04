@@ -13,10 +13,21 @@ type ProductRepository interface {
 	FindByName(ctx context.Context, name string) (*entities.Product, error)
 	Save(ctx context.Context, product *entities.Product) (*entities.Product, error)
 	FindByID(ctx context.Context, id string) (*entities.Product, error)
+	Delete(ctx context.Context, product *entities.Product) error
 }
 
 type productRepository struct {
 	db *gorm.DB
+}
+
+// Delete implements ProductRepository.
+func (p *productRepository) Delete(ctx context.Context, product *entities.Product) error {
+	err := p.db.WithContext(ctx).Delete(&product).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FindByID implements ProductRepository.

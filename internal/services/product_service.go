@@ -16,7 +16,7 @@ type ProductService interface {
 	Create(ctx context.Context, req *dto.ProductCreateReq, file *multipart.FileHeader) (*dto.ProductResponse, error)
 	Index(ctx context.Context, params *dto.ProductGetQueryParams) ([]dto.ProductResponse, int64, error)
 	Update(ctx context.Context, req *dto.ProductUpdateReq, file *multipart.FileHeader, id string) (*dto.ProductResponse, error)
-	Delete(ctx context.Context)
+	Delete(ctx context.Context, id string) error
 	Detail(ctx context.Context)
 }
 
@@ -116,8 +116,19 @@ func (p *productService) Create(ctx context.Context, req *dto.ProductCreateReq, 
 }
 
 // Delete implements ProductService.
-func (p *productService) Delete(ctx context.Context) {
-	panic("unimplemented")
+func (p *productService) Delete(ctx context.Context, id string) error {
+	// get product by id
+	product, err := p.productRepo.FindByID(ctx, id)
+	if err != nil {
+		return errors.New("product tidak ditemukan")
+	}
+
+	err = p.productRepo.Delete(ctx, product)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Detail implements ProductService.
