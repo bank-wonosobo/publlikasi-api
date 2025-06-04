@@ -17,11 +17,32 @@ type BannerService interface {
 	Index(ctx context.Context, params *dto.BannerGetQueryParams) ([]dto.BannerResponse, int64, error)
 	Update(ctx context.Context, request *dto.BannerUpdateRequest, file *multipart.FileHeader, id string) (*dto.BannerResponse, error)
 	Delete(ctx context.Context, id string) error
+	Activate(ctx context.Context, id string) (*dto.BannerResponse, error)
 }
 
 type bannerService struct {
 	bannerRepo repositories.BannerRepository
 	s3         storage.S3Storage
+}
+
+// Activete implements BannerService.
+func (b *bannerService) Activate(ctx context.Context, id string) (*dto.BannerResponse, error) {
+	// get report type by id
+	banner, err := b.bannerRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, errors.New("banner tidak ditemukan")
+	}
+
+	// update banner
+	banner.IsActive = !banner.IsActive
+	result, err := b.bannerRepo.Save(ctx, banner)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	bannerResponse := toBannerResponse(*result)
+	return &bannerResponse, nil
 }
 
 // Delete implements BannerService.
@@ -139,6 +160,7 @@ func toBannerResponse(banner entities.Banner) (result dto.BannerResponse) {
 		ID:          banner.ID,
 		Name:        banner.Name,
 		Description: banner.Description,
+		IsActive:    banner.IsActive,
 		ImageUrl:    banner.ImageUrl,
 		CreatedAt:   banner.CreatedAt,
 		UpdatedAt:   banner.UpdatedAt,

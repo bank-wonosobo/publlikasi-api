@@ -74,7 +74,7 @@ func (b *bannerRepository) GetAll(ctx context.Context, params *dto.BannerGetQuer
 
 // Save implements BannerRepository.
 func (b *bannerRepository) Save(ctx context.Context, banner *entities.Banner) (*entities.Banner, error) {
-	err := b.db.WithContext(ctx).Create(&banner).Error
+	err := b.db.WithContext(ctx).Save(&banner).Error
 	if err != nil {
 		return nil, err
 	}
