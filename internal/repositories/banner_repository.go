@@ -22,7 +22,12 @@ type bannerRepository struct {
 
 // Delete implements BannerRepository.
 func (b *bannerRepository) Delete(ctx context.Context, banner *entities.Banner) error {
-	panic("unimplemented")
+	err := b.db.WithContext(ctx).Delete(&banner).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FindByID implements BannerRepository.

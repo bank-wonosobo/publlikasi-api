@@ -16,11 +16,28 @@ type BannerService interface {
 	Create(ctx context.Context, req *dto.BannerCreateRequest, file *multipart.FileHeader) (*dto.BannerResponse, error)
 	Index(ctx context.Context, params *dto.BannerGetQueryParams) ([]dto.BannerResponse, int64, error)
 	Update(ctx context.Context, request *dto.BannerUpdateRequest, file *multipart.FileHeader, id string) (*dto.BannerResponse, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type bannerService struct {
 	bannerRepo repositories.BannerRepository
 	s3         storage.S3Storage
+}
+
+// Delete implements BannerService.
+func (b *bannerService) Delete(ctx context.Context, id string) error {
+	// get product by id
+	product, err := b.bannerRepo.FindByID(ctx, id)
+	if err != nil {
+		return errors.New("banner tidak ditemukan")
+	}
+
+	err = b.bannerRepo.Delete(ctx, product)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Update implements BannerService.

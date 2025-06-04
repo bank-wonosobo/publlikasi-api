@@ -108,3 +108,15 @@ func (h *BannerHandler) Update(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
+
+func (h *BannerHandler) Delete(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	err := h.bannerService.Delete(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(id))
+}

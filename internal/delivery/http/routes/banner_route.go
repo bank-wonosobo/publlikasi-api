@@ -19,4 +19,5 @@ func RegisterBannerRouter(router fiber.Router, service services.BannerService, v
 	admin.Post("/", handler.Create)
 	admin.Get("/", handler.Index)
 	admin.Put("/:id", handler.Update)
+	admin.Delete("/:id", handler.Delete)
 }
