@@ -8,34 +8,26 @@ import (
 )
 
 type ReportTypeRepository interface {
-	Save(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) (*entities.ReportType, error)
-	Update(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) (*entities.ReportType, error)
-	Delete(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) error
-	FindAll(ctx context.Context, tx *gorm.DB) ([]entities.ReportType, error)
-	FindByID(ctx context.Context, tx *gorm.DB, id int) (*entities.ReportType, error)
-	FindByName(ctx context.Context, tx *gorm.DB, name string) (*entities.ReportType, error)
+	Save(ctx context.Context, reportType *entities.ReportType) (*entities.ReportType, error)
+	Delete(ctx context.Context, reportType *entities.ReportType) error
+	FindAll(ctx context.Context) ([]entities.ReportType, error)
+	FindByID(ctx context.Context, id int) (*entities.ReportType, error)
+	FindByName(ctx context.Context, name string) (*entities.ReportType, error)
 }
 
 type reportTypeRepository struct {
+	db *gorm.DB
 }
 
-func NewReportType() ReportTypeRepository {
-	return &reportTypeRepository{}
+func NewReportType(db *gorm.DB) ReportTypeRepository {
+	return &reportTypeRepository{
+		db: db,
+	}
 }
 
 // Save implements ReportTypeRepository.
-func (r *reportTypeRepository) Save(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) (*entities.ReportType, error) {
-	err := tx.WithContext(ctx).Create(&reportType).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return reportType, nil
-}
-
-// Update implements ReportTypeRepository.
-func (r *reportTypeRepository) Update(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) (*entities.ReportType, error) {
-	err := tx.WithContext(ctx).Save(&reportType).Error
+func (r *reportTypeRepository) Save(ctx context.Context, reportType *entities.ReportType) (*entities.ReportType, error) {
+	err := r.db.WithContext(ctx).Save(&reportType).Error
 	if err != nil {
 		return nil, err
 	}
@@ -44,8 +36,8 @@ func (r *reportTypeRepository) Update(ctx context.Context, tx *gorm.DB, reportTy
 }
 
 // Delete implements ReportTypeRepository.
-func (r *reportTypeRepository) Delete(ctx context.Context, tx *gorm.DB, reportType *entities.ReportType) error {
-	err := tx.WithContext(ctx).Delete(&reportType).Error
+func (r *reportTypeRepository) Delete(ctx context.Context, reportType *entities.ReportType) error {
+	err := r.db.WithContext(ctx).Delete(&reportType).Error
 	if err != nil {
 		return err
 	}
@@ -54,8 +46,8 @@ func (r *reportTypeRepository) Delete(ctx context.Context, tx *gorm.DB, reportTy
 }
 
 // FindAll implements ReportTypeRepository.
-func (r *reportTypeRepository) FindAll(ctx context.Context, tx *gorm.DB) (result []entities.ReportType, err error) {
-	err = tx.WithContext(ctx).Find(&result).Error
+func (r *reportTypeRepository) FindAll(ctx context.Context) (result []entities.ReportType, err error) {
+	err = r.db.WithContext(ctx).Find(&result).Error
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +56,8 @@ func (r *reportTypeRepository) FindAll(ctx context.Context, tx *gorm.DB) (result
 }
 
 // FindByID implements ReportTypeRepository.
-func (r *reportTypeRepository) FindByID(ctx context.Context, tx *gorm.DB, id int) (result *entities.ReportType, err error) {
-	err = tx.WithContext(ctx).Where("id = ?", id).First(&result).Error
+func (r *reportTypeRepository) FindByID(ctx context.Context, id int) (result *entities.ReportType, err error) {
+	err = r.db.WithContext(ctx).Where("id = ?", id).First(&result).Error
 	if err != nil {
 		return nil, err
 	}
@@ -74,8 +66,8 @@ func (r *reportTypeRepository) FindByID(ctx context.Context, tx *gorm.DB, id int
 }
 
 // FindByName implements ReportTypeRepository.
-func (r *reportTypeRepository) FindByName(ctx context.Context, tx *gorm.DB, name string) (result *entities.ReportType, err error) {
-	err = tx.WithContext(ctx).Where("name = ?", name).First(&result).Error
+func (r *reportTypeRepository) FindByName(ctx context.Context, name string) (result *entities.ReportType, err error) {
+	err = r.db.WithContext(ctx).Where("name = ?", name).First(&result).Error
 	if err != nil {
 		return nil, err
 	}

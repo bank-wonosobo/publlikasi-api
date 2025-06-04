@@ -25,14 +25,12 @@ type NewsService interface {
 }
 
 type newsService struct {
-	db       *gorm.DB
 	newsRepo repositories.NewsRepository
 	s3       storage.S3Storage
 }
 
-func NewNews(db *gorm.DB, newsRepo repositories.NewsRepository, s3 storage.S3Storage) NewsService {
+func NewNews(newsRepo repositories.NewsRepository, s3 storage.S3Storage) NewsService {
 	return &newsService{
-		db:       db,
 		newsRepo: newsRepo,
 		s3:       s3,
 	}
@@ -41,13 +39,13 @@ func NewNews(db *gorm.DB, newsRepo repositories.NewsRepository, s3 storage.S3Sto
 // Create implements NewsService.
 func (n *newsService) Create(ctx context.Context, req *dto.NewsCreateRequest, file *multipart.FileHeader) (*dto.NewsResponse, error) {
 	// check if title exist
-	_, err := n.newsRepo.FindByTitle(ctx, n.db, req.Title)
+	_, err := n.newsRepo.FindByTitle(ctx, req.Title)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("berita sudah ada")
 	}
 
 	// check if slug exist
-	_, err = n.newsRepo.FindBySlug(ctx, n.db, req.Slug)
+	_, err = n.newsRepo.FindBySlug(ctx, req.Slug)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("slug sudah ada")
 	}
@@ -67,7 +65,7 @@ func (n *newsService) Create(ctx context.Context, req *dto.NewsCreateRequest, fi
 		Status:   entities.Draft,
 		ImageUrl: imageUrl,
 	}
-	result, err := n.newsRepo.Save(ctx, n.db, &report)
+	result, err := n.newsRepo.Save(ctx, &report)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +89,7 @@ func (n *newsService) Index(ctx context.Context, params *dto.NewsGetQueryParams)
 	offset := (params.Page - 1) * params.Limit
 
 	// get all data with total
-	result, total, err := n.newsRepo.GetAll(ctx, n.db, params, offset)
+	result, total, err := n.newsRepo.GetAll(ctx, params, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -105,7 +103,7 @@ func (n *newsService) Index(ctx context.Context, params *dto.NewsGetQueryParams)
 // Update implements NewsService.
 func (n *newsService) Update(ctx context.Context, request *dto.NewsUpdateRequest, file *multipart.FileHeader, id string) (*dto.NewsResponse, error) {
 	// check news type id
-	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	news, err := n.newsRepo.FindByID(ctx, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("news id tidak ditemukan")
 	}
@@ -124,7 +122,7 @@ func (n *newsService) Update(ctx context.Context, request *dto.NewsUpdateRequest
 		news.ImageUrl = imageUrl
 	}
 
-	result, err := n.newsRepo.Update(ctx, n.db, news)
+	result, err := n.newsRepo.Save(ctx, news)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +135,7 @@ func (n *newsService) Update(ctx context.Context, request *dto.NewsUpdateRequest
 // Approve implements NewsService.
 func (n *newsService) Approve(ctx context.Context, id string) (*dto.NewsResponse, error) {
 	// get news type by id
-	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	news, err := n.newsRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("berita tidak ditemukan")
 	}
@@ -149,7 +147,7 @@ func (n *newsService) Approve(ctx context.Context, id string) (*dto.NewsResponse
 	news.Status = entities.Published
 	news.PublishedAt = &now
 	news.ApprovedBy = &userApprover
-	result, err := n.newsRepo.Update(ctx, n.db, news)
+	result, err := n.newsRepo.Save(ctx, news)
 	if err != nil {
 		return nil, err
 	}
@@ -162,14 +160,14 @@ func (n *newsService) Approve(ctx context.Context, id string) (*dto.NewsResponse
 // Archive implements NewsService.
 func (n *newsService) Archive(ctx context.Context, id string) (*dto.NewsResponse, error) {
 	// get news type by id
-	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	news, err := n.newsRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("news tidak ditemukan")
 	}
 
 	// update news
 	news.Status = entities.Archived
-	result, err := n.newsRepo.Update(ctx, n.db, news)
+	result, err := n.newsRepo.Save(ctx, news)
 	if err != nil {
 		return nil, err
 	}
@@ -182,12 +180,12 @@ func (n *newsService) Archive(ctx context.Context, id string) (*dto.NewsResponse
 // Delete implements NewsService.
 func (n *newsService) Delete(ctx context.Context, id string) error {
 	// get news  by id
-	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	news, err := n.newsRepo.FindByID(ctx, id)
 	if err != nil {
 		return errors.New("news tidak ditemukan")
 	}
 
-	err = n.newsRepo.Delete(ctx, n.db, news)
+	err = n.newsRepo.Delete(ctx, news)
 	if err != nil {
 		return err
 	}
@@ -197,7 +195,7 @@ func (n *newsService) Delete(ctx context.Context, id string) error {
 
 // Detail implements NewsService.
 func (n *newsService) Detail(ctx context.Context, id string) (*dto.NewsResponse, error) {
-	news, err := n.newsRepo.FindByID(ctx, n.db, id)
+	news, err := n.newsRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +208,7 @@ func (n *newsService) Detail(ctx context.Context, id string) (*dto.NewsResponse,
 
 // DetailBySlug implements NewsService.
 func (n *newsService) DetailBySlug(ctx context.Context, slug string) (*dto.NewsResponse, error) {
-	news, err := n.newsRepo.FindBySlug(ctx, n.db, slug)
+	news, err := n.newsRepo.FindBySlug(ctx, slug)
 	if err != nil {
 		return nil, err
 	}

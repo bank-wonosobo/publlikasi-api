@@ -18,14 +18,11 @@ type ReportTypeService interface {
 }
 
 type reportTypeService struct {
-	db             *gorm.DB
 	reportTypeRepo repositories.ReportTypeRepository
 }
 
-func NewReportType(db *gorm.DB,
-	reportTypeRepo repositories.ReportTypeRepository) ReportTypeService {
+func NewReportType(reportTypeRepo repositories.ReportTypeRepository) ReportTypeService {
 	return &reportTypeService{
-		db:             db,
 		reportTypeRepo: reportTypeRepo,
 	}
 }
@@ -33,7 +30,7 @@ func NewReportType(db *gorm.DB,
 // Index implements ReportTypeService.
 func (r *reportTypeService) Index(ctx context.Context) ([]dto.ReportTypeResponse, error) {
 	// get all
-	result, err := r.reportTypeRepo.FindAll(ctx, r.db)
+	result, err := r.reportTypeRepo.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +44,7 @@ func (r *reportTypeService) Index(ctx context.Context) ([]dto.ReportTypeResponse
 // Create implements ReportTypeService.
 func (r *reportTypeService) Create(ctx context.Context, req *dto.ReportTypeCreateRequest) (*dto.ReportTypeResponse, error) {
 	// check if name exist
-	_, err := r.reportTypeRepo.FindByName(ctx, r.db, req.Name)
+	_, err := r.reportTypeRepo.FindByName(ctx, req.Name)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("jenis laporan sudah ada")
 	}
@@ -56,7 +53,7 @@ func (r *reportTypeService) Create(ctx context.Context, req *dto.ReportTypeCreat
 		Name:        req.Name,
 		Description: req.Description,
 	}
-	result, err := r.reportTypeRepo.Save(ctx, r.db, &reportType)
+	result, err := r.reportTypeRepo.Save(ctx, &reportType)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +67,7 @@ func (r *reportTypeService) Create(ctx context.Context, req *dto.ReportTypeCreat
 // Update implements ReportTypeService.
 func (r *reportTypeService) Update(ctx context.Context, req *dto.ReportTypeCreateRequest, id int) (*dto.ReportTypeResponse, error) {
 	// get report type by id
-	reportType, err := r.reportTypeRepo.FindByID(ctx, r.db, id)
+	reportType, err := r.reportTypeRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("report type tidak ditemukan")
 	}
@@ -78,7 +75,7 @@ func (r *reportTypeService) Update(ctx context.Context, req *dto.ReportTypeCreat
 	// update report type
 	reportType.Name = req.Name
 	reportType.Description = req.Description
-	result, err := r.reportTypeRepo.Update(ctx, r.db, reportType)
+	result, err := r.reportTypeRepo.Save(ctx, reportType)
 	if err != nil {
 		return nil, err
 	}
@@ -92,12 +89,12 @@ func (r *reportTypeService) Update(ctx context.Context, req *dto.ReportTypeCreat
 // Delete implements ReportTypeService.
 func (r *reportTypeService) Delete(ctx context.Context, id int) error {
 	// get report type by id
-	reportType, err := r.reportTypeRepo.FindByID(ctx, r.db, id)
+	reportType, err := r.reportTypeRepo.FindByID(ctx, id)
 	if err != nil {
 		return errors.New("report type tidak ditemukan")
 	}
 
-	err = r.reportTypeRepo.Delete(ctx, r.db, reportType)
+	err = r.reportTypeRepo.Delete(ctx, reportType)
 	if err != nil {
 		return err
 	}

@@ -86,18 +86,18 @@ func main() {
 	// }))
 
 	// init repo
-	reportTypeRepo := repositories.NewReportType()
-	reportRepo := repositories.NewReport()
-	newsRepo := repositories.NewNews()
-	announcementRepo := repositories.NewAnnouncement()
+	reportTypeRepo := repositories.NewReportType(db)
+	reportRepo := repositories.NewReport(db)
+	newsRepo := repositories.NewNews(db)
+	announcementRepo := repositories.NewAnnouncement(db)
 	productRepo := repositories.NewProduct(db)
 	bannerRepo := repositories.NewBanner(db)
 
 	// init service
-	reportTypeService := services.NewReportType(db, reportTypeRepo)
-	reportService := services.NewReport(db, reportRepo, reportTypeRepo, s3Storage)
-	newsService := services.NewNews(db, newsRepo, s3Storage)
-	announcementServce := services.NewAnnouncement(db, announcementRepo, s3Storage)
+	reportTypeService := services.NewReportType(reportTypeRepo)
+	reportService := services.NewReport(reportRepo, reportTypeRepo, s3Storage)
+	newsService := services.NewNews(newsRepo, s3Storage)
+	announcementServce := services.NewAnnouncement(announcementRepo, s3Storage)
 	productService := services.NewProduct(productRepo, s3Storage)
 	bannerService := services.NewBanner(bannerRepo, s3Storage)
 

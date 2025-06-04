@@ -74,7 +74,7 @@ func (p *productRepository) FindByName(ctx context.Context, name string) (result
 
 // Save implements ProductRepository.
 func (p *productRepository) Save(ctx context.Context, product *entities.Product) (*entities.Product, error) {
-	err := p.db.WithContext(ctx).Create(&product).Error
+	err := p.db.WithContext(ctx).Save(&product).Error
 	if err != nil {
 		return nil, err
 	}

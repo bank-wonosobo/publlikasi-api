@@ -9,26 +9,28 @@ import (
 )
 
 type ReportRepository interface {
-	Save(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
-	GetAll(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, offsite int) ([]entities.Report, int64, error)
-	Update(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error)
-	Delete(ctx context.Context, tx *gorm.DB, report *entities.Report) error
-	FindByID(ctx context.Context, tx *gorm.DB, id string) (*entities.Report, error)
-	FindByTitle(ctx context.Context, tx *gorm.DB, title string) (*entities.Report, error)
-	GetByReportType(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, reportTypeID int, offsite int) ([]entities.Report, int64, error)
+	Save(ctx context.Context, report *entities.Report) (*entities.Report, error)
+	GetAll(ctx context.Context, params *dto.ReportGetQueryParams, offsite int) ([]entities.Report, int64, error)
+	Delete(ctx context.Context, report *entities.Report) error
+	FindByID(ctx context.Context, id string) (*entities.Report, error)
+	FindByTitle(ctx context.Context, title string) (*entities.Report, error)
+	GetByReportType(ctx context.Context, params *dto.ReportGetQueryParams, reportTypeID int, offsite int) ([]entities.Report, int64, error)
 	GetByNameDescYear()
 }
 
 type reportRepository struct {
+	db *gorm.DB
 }
 
-func NewReport() ReportRepository {
-	return &reportRepository{}
+func NewReport(db *gorm.DB) ReportRepository {
+	return &reportRepository{
+		db: db,
+	}
 }
 
 // GetAll implements ReportRepository.
-func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, offsite int) (result []entities.Report, total int64, err error) {
-	query := tx.Model(&entities.Report{})
+func (r *reportRepository) GetAll(ctx context.Context, params *dto.ReportGetQueryParams, offsite int) (result []entities.Report, total int64, err error) {
+	query := r.db.Model(&entities.Report{})
 
 	if params.Status != "" {
 		query = query.Where("status = ?", params.Status)
@@ -53,18 +55,8 @@ func (r *reportRepository) GetAll(ctx context.Context, tx *gorm.DB, params *dto.
 }
 
 // Save implements ReportRepository.
-func (r *reportRepository) Save(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error) {
-	err := tx.WithContext(ctx).Preload("ReportTypes").Create(&report).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return report, nil
-}
-
-// Update implements ReportRepository.
-func (r *reportRepository) Update(ctx context.Context, tx *gorm.DB, report *entities.Report) (*entities.Report, error) {
-	err := tx.WithContext(ctx).Preload("ReportType").Save(&report).Error
+func (r *reportRepository) Save(ctx context.Context, report *entities.Report) (*entities.Report, error) {
+	err := r.db.WithContext(ctx).Preload("ReportTypes").Save(&report).Error
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +65,8 @@ func (r *reportRepository) Update(ctx context.Context, tx *gorm.DB, report *enti
 }
 
 // FindByID implements ReportRepository.
-func (r *reportRepository) FindByID(ctx context.Context, tx *gorm.DB, id string) (result *entities.Report, err error) {
-	err = tx.WithContext(ctx).Preload("ReportType").Where("id = ?", id).First(&result).Error
+func (r *reportRepository) FindByID(ctx context.Context, id string) (result *entities.Report, err error) {
+	err = r.db.WithContext(ctx).Preload("ReportType").Where("id = ?", id).First(&result).Error
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +75,8 @@ func (r *reportRepository) FindByID(ctx context.Context, tx *gorm.DB, id string)
 }
 
 // FindByTitle implements ReportRepository.
-func (r *reportRepository) FindByTitle(ctx context.Context, tx *gorm.DB, title string) (result *entities.Report, err error) {
-	err = tx.WithContext(ctx).Preload("ReportType").Where("title = ?", title).First(&result).Error
+func (r *reportRepository) FindByTitle(ctx context.Context, title string) (result *entities.Report, err error) {
+	err = r.db.WithContext(ctx).Preload("ReportType").Where("title = ?", title).First(&result).Error
 	if err != nil {
 		return nil, err
 	}
@@ -93,8 +85,8 @@ func (r *reportRepository) FindByTitle(ctx context.Context, tx *gorm.DB, title s
 }
 
 // Delete implements ReportRepository.
-func (r *reportRepository) Delete(ctx context.Context, tx *gorm.DB, report *entities.Report) error {
-	err := tx.WithContext(ctx).Delete(&report).Error
+func (r *reportRepository) Delete(ctx context.Context, report *entities.Report) error {
+	err := r.db.WithContext(ctx).Delete(&report).Error
 	if err != nil {
 		return err
 	}
@@ -103,8 +95,8 @@ func (r *reportRepository) Delete(ctx context.Context, tx *gorm.DB, report *enti
 }
 
 // GetByReportType implements ReportRepository.
-func (r *reportRepository) GetByReportType(ctx context.Context, tx *gorm.DB, params *dto.ReportGetQueryParams, reportTypeID int, offsite int) (result []entities.Report, total int64, err error) {
-	query := tx.Model(&entities.Report{})
+func (r *reportRepository) GetByReportType(ctx context.Context, params *dto.ReportGetQueryParams, reportTypeID int, offsite int) (result []entities.Report, total int64, err error) {
+	query := r.db.Model(&entities.Report{})
 
 	query = query.Where("report_type_id = ?", reportTypeID)
 

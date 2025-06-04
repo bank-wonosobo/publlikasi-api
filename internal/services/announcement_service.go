@@ -24,16 +24,13 @@ type AnnouncementService interface {
 }
 
 type announcementService struct {
-	db               *gorm.DB
 	announcementRepo repositories.AnnouncementRepository
 	s3               storage.S3Storage
 }
 
-func NewAnnouncement(db *gorm.DB,
-	announcementRepo repositories.AnnouncementRepository,
+func NewAnnouncement(announcementRepo repositories.AnnouncementRepository,
 	s3 storage.S3Storage) AnnouncementService {
 	return &announcementService{
-		db:               db,
 		announcementRepo: announcementRepo,
 		s3:               s3,
 	}
@@ -53,7 +50,7 @@ func (a *announcementService) Index(ctx context.Context, params *dto.Announcemen
 	offset := (params.Page - 1) * params.Limit
 
 	// get all data with total
-	result, total, err := a.announcementRepo.GetAll(ctx, a.db, params, offset)
+	result, total, err := a.announcementRepo.GetAll(ctx, params, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -67,7 +64,7 @@ func (a *announcementService) Index(ctx context.Context, params *dto.Announcemen
 // Create implements AnnouncementService.
 func (a *announcementService) Create(ctx context.Context, request *dto.AnnouncementCreateReq, file *multipart.FileHeader) (*dto.AnnouncementResponse, error) {
 	// check if title exist
-	_, err := a.announcementRepo.FindByTitle(ctx, a.db, request.Title)
+	_, err := a.announcementRepo.FindByTitle(ctx, request.Title)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("pengumuman sudah ada")
 	}
@@ -90,7 +87,7 @@ func (a *announcementService) Create(ctx context.Context, request *dto.Announcem
 		IsActive:       true,
 		Status:         entities.Draft,
 	}
-	result, err := a.announcementRepo.Save(ctx, a.db, &report)
+	result, err := a.announcementRepo.Save(ctx, &report)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +100,7 @@ func (a *announcementService) Create(ctx context.Context, request *dto.Announcem
 // Update implements AnnouncementService.
 func (a *announcementService) Update(ctx context.Context, request *dto.AnnouncementUpdateReq, file *multipart.FileHeader, id string) (*dto.AnnouncementResponse, error) {
 	// check news type id
-	announcement, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	announcement, err := a.announcementRepo.FindByID(ctx, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("announcement id tidak ditemukan")
 	}
@@ -124,7 +121,7 @@ func (a *announcementService) Update(ctx context.Context, request *dto.Announcem
 		announcement.AttachmentUrl = &attachmentUrl
 	}
 
-	result, err := a.announcementRepo.Update(ctx, a.db, announcement)
+	result, err := a.announcementRepo.Save(ctx, announcement)
 	if err != nil {
 		return nil, err
 	}
@@ -137,12 +134,12 @@ func (a *announcementService) Update(ctx context.Context, request *dto.Announcem
 // Delete implements AnnouncementService.
 func (a *announcementService) Delete(ctx context.Context, id string) error {
 	// get news  by id
-	news, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	news, err := a.announcementRepo.FindByID(ctx, id)
 	if err != nil {
 		return errors.New("pengumuman tidak ditemukan")
 	}
 
-	err = a.announcementRepo.Delete(ctx, a.db, news)
+	err = a.announcementRepo.Delete(ctx, news)
 	if err != nil {
 		return err
 	}
@@ -153,7 +150,7 @@ func (a *announcementService) Delete(ctx context.Context, id string) error {
 // Approve implements AnnouncementService.
 func (a *announcementService) Approve(ctx context.Context, id string) (*dto.AnnouncementResponse, error) {
 	// get news type by id
-	announcement, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	announcement, err := a.announcementRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("pengumuman tidak ditemukan")
 	}
@@ -165,7 +162,7 @@ func (a *announcementService) Approve(ctx context.Context, id string) (*dto.Anno
 	announcement.Status = entities.Published
 	announcement.PublishedAt = &now
 	announcement.ApprovedBy = &userApprover
-	result, err := a.announcementRepo.Update(ctx, a.db, announcement)
+	result, err := a.announcementRepo.Save(ctx, announcement)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +175,7 @@ func (a *announcementService) Approve(ctx context.Context, id string) (*dto.Anno
 // Archive implements AnnouncementService.
 func (a *announcementService) Archive(ctx context.Context, id string) (*dto.AnnouncementResponse, error) {
 	// get news type by id
-	announcement, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	announcement, err := a.announcementRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("pengumuman tidak ditemukan")
 	}
@@ -186,7 +183,7 @@ func (a *announcementService) Archive(ctx context.Context, id string) (*dto.Anno
 	// update announcement
 
 	announcement.Status = entities.Archived
-	result, err := a.announcementRepo.Update(ctx, a.db, announcement)
+	result, err := a.announcementRepo.Save(ctx, announcement)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +195,7 @@ func (a *announcementService) Archive(ctx context.Context, id string) (*dto.Anno
 
 // Detail implements AnnouncementService.
 func (a *announcementService) Detail(ctx context.Context, id string) (*dto.AnnouncementResponse, error) {
-	news, err := a.announcementRepo.FindByID(ctx, a.db, id)
+	news, err := a.announcementRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}

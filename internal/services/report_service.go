@@ -24,19 +24,16 @@ type ReportService interface {
 }
 
 type reportService struct {
-	db             *gorm.DB
 	reportRepo     repositories.ReportRepository
 	reportTypeRepo repositories.ReportTypeRepository
 	s3             storage.S3Storage
 }
 
-func NewReport(db *gorm.DB,
-	reportRepo repositories.ReportRepository,
+func NewReport(reportRepo repositories.ReportRepository,
 	reportTypeRepo repositories.ReportTypeRepository,
 	s3 storage.S3Storage,
 ) ReportService {
 	return &reportService{
-		db:             db,
 		reportRepo:     reportRepo,
 		reportTypeRepo: reportTypeRepo,
 		s3:             s3,
@@ -57,7 +54,7 @@ func (r *reportService) Index(ctx context.Context, params *dto.ReportGetQueryPar
 	offset := (params.Page - 1) * params.Limit
 
 	// get all data with total
-	result, total, err := r.reportRepo.GetAll(ctx, r.db, params, offset)
+	result, total, err := r.reportRepo.GetAll(ctx, params, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -71,13 +68,13 @@ func (r *reportService) Index(ctx context.Context, params *dto.ReportGetQueryPar
 // Create implements ReportService.
 func (r *reportService) Create(ctx context.Context, req *dto.ReportCreateRequest, file *multipart.FileHeader) (*dto.ReportResponse, error) {
 	// check if title exist
-	_, err := r.reportRepo.FindByTitle(ctx, r.db, req.Title)
+	_, err := r.reportRepo.FindByTitle(ctx, req.Title)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("judul laporan sudah ada")
 	}
 
 	// check report type id
-	reportType, err := r.reportTypeRepo.FindByName(ctx, r.db, req.ReportType)
+	reportType, err := r.reportTypeRepo.FindByName(ctx, req.ReportType)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("report type tidak ditemukan")
 	}
@@ -101,7 +98,7 @@ func (r *reportService) Create(ctx context.Context, req *dto.ReportCreateRequest
 		UploadBy:    "user",
 		FileUrl:     &fileUrl,
 	}
-	result, err := r.reportRepo.Save(ctx, r.db, &report)
+	result, err := r.reportRepo.Save(ctx, &report)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +111,7 @@ func (r *reportService) Create(ctx context.Context, req *dto.ReportCreateRequest
 // UploadFile implements ReportService.
 func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHeader, id string) (*dto.ReportResponse, error) {
 	// check report id
-	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	report, err := r.reportRepo.FindByID(ctx, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("report tidak ditemukan")
 	}
@@ -131,7 +128,7 @@ func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHead
 
 	// update report
 	report.FileUrl = &fileUrl
-	result, err := r.reportRepo.Update(ctx, r.db, report)
+	result, err := r.reportRepo.Save(ctx, report)
 	if err != nil {
 		return nil, err
 	}
@@ -144,13 +141,13 @@ func (r *reportService) UploadFile(ctx context.Context, file *multipart.FileHead
 // Update implements ReportService.
 func (r *reportService) Update(ctx context.Context, req *dto.ReportUpdateRequest, id string) (*dto.ReportResponse, error) {
 	// get report type by id
-	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	report, err := r.reportRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// check report type id
-	reportType, err := r.reportTypeRepo.FindByName(ctx, r.db, req.ReportType)
+	reportType, err := r.reportTypeRepo.FindByName(ctx, req.ReportType)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, errors.New("report type tidak ditemukan")
 	}
@@ -165,7 +162,7 @@ func (r *reportService) Update(ctx context.Context, req *dto.ReportUpdateRequest
 	report.Version = req.Version
 	report.ReportType = *reportType
 
-	result, err := r.reportRepo.Update(ctx, r.db, report)
+	result, err := r.reportRepo.Save(ctx, report)
 	if err != nil {
 		return nil, err
 	}
@@ -178,12 +175,12 @@ func (r *reportService) Update(ctx context.Context, req *dto.ReportUpdateRequest
 // Delete implements ReportService.
 func (r *reportService) Delete(ctx context.Context, id string) error {
 	// get report type by id
-	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	report, err := r.reportRepo.FindByID(ctx, id)
 	if err != nil {
 		return errors.New("report tidak ditemukan")
 	}
 
-	err = r.reportRepo.Delete(ctx, r.db, report)
+	err = r.reportRepo.Delete(ctx, report)
 	if err != nil {
 		return err
 	}
@@ -194,14 +191,14 @@ func (r *reportService) Delete(ctx context.Context, id string) error {
 // Archive implements ReportService.
 func (r *reportService) Archive(ctx context.Context, id string) (*dto.ReportResponse, error) {
 	// get report type by id
-	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	report, err := r.reportRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("report tidak ditemukan")
 	}
 
 	// update report
 	report.Status = entities.Archived
-	result, err := r.reportRepo.Update(ctx, r.db, report)
+	result, err := r.reportRepo.Save(ctx, report)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +211,7 @@ func (r *reportService) Archive(ctx context.Context, id string) (*dto.ReportResp
 // Upprove implements ReportService.
 func (r *reportService) Approve(ctx context.Context, id string) (*dto.ReportResponse, error) {
 	// get report type by id
-	report, err := r.reportRepo.FindByID(ctx, r.db, id)
+	report, err := r.reportRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("report tidak ditemukan")
 	}
@@ -223,7 +220,7 @@ func (r *reportService) Approve(ctx context.Context, id string) (*dto.ReportResp
 	userApprover := "user approver"
 	report.Status = entities.Published
 	report.ApprovedBy = &userApprover
-	result, err := r.reportRepo.Update(ctx, r.db, report)
+	result, err := r.reportRepo.Save(ctx, report)
 	if err != nil {
 		return nil, err
 	}
@@ -247,7 +244,7 @@ func (r *reportService) GetByReportType(ctx context.Context, params *dto.ReportG
 	offset := (params.Page - 1) * params.Limit
 
 	// get all data with total
-	result, total, err := r.reportRepo.GetByReportType(ctx, r.db, params, reportTypeID, offset)
+	result, total, err := r.reportRepo.GetByReportType(ctx, params, reportTypeID, offset)
 	if err != nil {
 		return nil, err
 	}
