@@ -17,7 +17,7 @@ type ProductService interface {
 	Index(ctx context.Context, params *dto.ProductGetQueryParams) ([]dto.ProductResponse, int64, error)
 	Update(ctx context.Context, req *dto.ProductUpdateReq, file *multipart.FileHeader, id string) (*dto.ProductResponse, error)
 	Delete(ctx context.Context, id string) error
-	Detail(ctx context.Context)
+	Detail(ctx context.Context, id string) (*dto.ProductResponse, error)
 }
 
 type productService struct {
@@ -132,8 +132,16 @@ func (p *productService) Delete(ctx context.Context, id string) error {
 }
 
 // Detail implements ProductService.
-func (p *productService) Detail(ctx context.Context) {
-	panic("unimplemented")
+func (p *productService) Detail(ctx context.Context, id string) (*dto.ProductResponse, error) {
+	product, err := p.productRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	productReponse := toProductResponse(*product)
+
+	return &productReponse, nil
 }
 
 func NewProduct(productRepo repositories.ProductRepository, s3 storage.S3Storage) ProductService {

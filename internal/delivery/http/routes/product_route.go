@@ -16,4 +16,5 @@ func RegisterProductRouter(router fiber.Router, service services.ProductService,
 	products.Get("/", handler.Index)
 	products.Put("/:id", handler.Update)
 	products.Delete("/:id", handler.Delete)
+	products.Get("/:id", handler.Detail)
 }
