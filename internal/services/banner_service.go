@@ -14,11 +14,37 @@ import (
 
 type BannerService interface {
 	Create(ctx context.Context, req *dto.BannerCreateRequest, file *multipart.FileHeader) (*dto.BannerResponse, error)
+	Index(ctx context.Context, params *dto.BannerGetQueryParams) ([]dto.BannerResponse, int64, error)
 }
 
 type bannerService struct {
 	bannerRepo repositories.BannerRepository
 	s3         storage.S3Storage
+}
+
+// Index implements BannerService.
+func (b *bannerService) Index(ctx context.Context, params *dto.BannerGetQueryParams) ([]dto.BannerResponse, int64, error) {
+	// Set default values
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 10
+	}
+
+	// set offset
+	offset := (params.Page - 1) * params.Limit
+
+	// get all data with total
+	result, total, err := b.bannerRepo.GetAll(ctx, params, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// return result
+	productResponse := toBannerResponses(result)
+
+	return productResponse, total, nil
 }
 
 // Create implements BannerService.
@@ -73,11 +99,11 @@ func toBannerResponse(banner entities.Banner) (result dto.BannerResponse) {
 	return result
 }
 
-func toBannerResponses(news []entities.Product) []dto.ProductResponse {
-	var newsReponses []dto.ProductResponse
-	for _, newsItem := range news {
-		newsReponses = append(newsReponses, toProductResponse(newsItem))
+func toBannerResponses(banners []entities.Banner) []dto.BannerResponse {
+	var bannerReponses []dto.BannerResponse
+	for _, bannerItem := range banners {
+		bannerReponses = append(bannerReponses, toBannerResponse(bannerItem))
 	}
 
-	return newsReponses
+	return bannerReponses
 }

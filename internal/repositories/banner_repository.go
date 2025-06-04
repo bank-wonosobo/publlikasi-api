@@ -41,8 +41,25 @@ func (b *bannerRepository) FindByName(ctx context.Context, name string) (result 
 }
 
 // GetAll implements BannerRepository.
-func (b *bannerRepository) GetAll(ctx context.Context, params *dto.BannerGetQueryParams, offsite int) ([]entities.Banner, int64, error) {
-	panic("unimplemented")
+func (b *bannerRepository) GetAll(ctx context.Context, params *dto.BannerGetQueryParams, offsite int) (result []entities.Banner, total int64, err error) {
+	query := b.db.Model(&entities.Banner{})
+
+	if params.IsActive != nil {
+		query = query.Where("is_active = ?", params.IsActive)
+	}
+
+	if params.Key != "" {
+		query = query.Where("name ILIKE ?", "%"+params.Key+"%").Or("description ILIKE ?", "%"+params.Key+"%")
+	}
+
+	query.Count(&total)
+
+	err = query.Limit(params.Limit).Offset(offsite).Find(&result).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return result, total, nil
 }
 
 // Save implements BannerRepository.

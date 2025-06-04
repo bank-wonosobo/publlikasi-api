@@ -9,9 +9,10 @@ type BannerCreateRequest struct {
 }
 
 type BannerGetQueryParams struct {
-	Key   string `query:"key"`
-	Page  int    `query:"page"`
-	Limit int    `query:"limit"`
+	Key      string `query:"key"`
+	IsActive *bool  `query:"is_active"`
+	Page     int    `query:"page"`
+	Limit    int    `query:"limit"`
 }
 
 // response

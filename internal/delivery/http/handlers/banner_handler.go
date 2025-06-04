@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strings"
+
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/services"
 	"github.com/bank-wonosobo/publlikasi-api.git/pkg/validator"
@@ -51,4 +53,29 @@ func (h *BannerHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
 	}
 	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
+}
+
+func (h *BannerHandler) Index(c *fiber.Ctx) error {
+	// parse params
+	var params dto.BannerGetQueryParams
+	if err := c.QueryParser(&params); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	// get status publish
+	isActive := true
+	if strings.Split(c.Path(), "/")[3] != "admin" {
+		params.IsActive = &isActive
+	}
+	// call service
+	result, total, err := h.bannerService.Index(c.Context(), &params)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	// calculate total page
+	totalPage := (total + int64(params.Limit) - 1) / int64(params.Limit)
+
+	// return result
+	return c.Status(fiber.StatusOK).JSON(dto.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
 }

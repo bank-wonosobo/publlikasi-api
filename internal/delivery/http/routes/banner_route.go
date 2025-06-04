@@ -12,5 +12,10 @@ func RegisterBannerRouter(router fiber.Router, service services.BannerService, v
 
 	// public routes
 	banners := router.Group("/banners")
-	banners.Post("/", handler.Create)
+	banners.Get("/", handler.Index)
+
+	// admin routes
+	admin := router.Group("admin/banners")
+	admin.Post("/", handler.Create)
+	admin.Get("/", handler.Index)
 }
