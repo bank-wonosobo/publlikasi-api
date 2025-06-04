@@ -8,6 +8,12 @@ type BannerCreateRequest struct {
 	Description string `json:"description" form:"description"`
 }
 
+type BannerUpdateRequest struct {
+	Name        string `json:"name" form:"name"`
+	Image       *string `json:"image" form:"image"`
+	Description string `json:"description" form:"description"`
+}
+
 type BannerGetQueryParams struct {
 	Key      string `query:"key"`
 	IsActive *bool  `query:"is_active"`

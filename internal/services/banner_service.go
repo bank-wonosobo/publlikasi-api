@@ -15,11 +15,42 @@ import (
 type BannerService interface {
 	Create(ctx context.Context, req *dto.BannerCreateRequest, file *multipart.FileHeader) (*dto.BannerResponse, error)
 	Index(ctx context.Context, params *dto.BannerGetQueryParams) ([]dto.BannerResponse, int64, error)
+	Update(ctx context.Context, request *dto.BannerUpdateRequest, file *multipart.FileHeader, id string) (*dto.BannerResponse, error)
 }
 
 type bannerService struct {
 	bannerRepo repositories.BannerRepository
 	s3         storage.S3Storage
+}
+
+// Update implements BannerService.
+func (b *bannerService) Update(ctx context.Context, request *dto.BannerUpdateRequest, file *multipart.FileHeader, id string) (*dto.BannerResponse, error) {
+	// check news type id
+	product, err := b.bannerRepo.FindByID(ctx, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("banner id tidak ditemukan")
+	}
+
+	// update report type
+	product.Name = request.Name
+	product.Description = request.Description
+	if file != nil {
+		// upload file
+		imageUrl, err := b.s3.UploadFileRename(file, "banner/images/", nil)
+		if err != nil {
+			return nil, err
+		}
+		product.ImageUrl = imageUrl
+	}
+
+	result, err := b.bannerRepo.Save(ctx, product)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	bannerResponse := toBannerResponse(*result)
+	return &bannerResponse, nil
 }
 
 // Index implements BannerService.
@@ -56,7 +87,7 @@ func (b *bannerService) Create(ctx context.Context, req *dto.BannerCreateRequest
 	}
 
 	// upload file
-	imageUrl, err := b.s3.UploadFileRename(file, "products/images/", nil)
+	imageUrl, err := b.s3.UploadFileRename(file, "banner/images/", nil)
 	if err != nil {
 		return nil, err
 	}

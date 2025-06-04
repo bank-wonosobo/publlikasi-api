@@ -79,3 +79,32 @@ func (h *BannerHandler) Index(c *fiber.Ctx) error {
 	// return result
 	return c.Status(fiber.StatusOK).JSON(dto.CreatePaginateResponse(result, params.Page, params.Limit, total, totalPage))
 }
+func (h *BannerHandler) Update(c *fiber.Ctx) error {
+	var request dto.BannerUpdateRequest
+	id := c.Params("id")
+	// parse request
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	// validate request
+	if err := h.validator.Validate(request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	// get file
+	file, err := c.FormFile("image")
+	if request.Image != nil {
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+		}
+	}
+
+	// call service
+	result, err := h.bannerService.Update(c.Context(), &request, file, id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
+}

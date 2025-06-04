@@ -26,8 +26,13 @@ func (b *bannerRepository) Delete(ctx context.Context, banner *entities.Banner) 
 }
 
 // FindByID implements BannerRepository.
-func (b *bannerRepository) FindByID(ctx context.Context, id string) (*entities.Banner, error) {
-	panic("unimplemented")
+func (b *bannerRepository) FindByID(ctx context.Context, id string) (result *entities.Banner, err error) {
+	err = b.db.WithContext(ctx).Where("id = ?", id).First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // FindByName implements BannerRepository.
