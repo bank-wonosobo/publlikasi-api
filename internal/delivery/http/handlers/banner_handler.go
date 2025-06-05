@@ -63,8 +63,8 @@ func (h *BannerHandler) Index(c *fiber.Ctx) error {
 	}
 
 	// get status publish
-	isActive := true
 	if strings.Split(c.Path(), "/")[3] != "admin" {
+		isActive := true
 		params.IsActive = &isActive
 	}
 	// call service

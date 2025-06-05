@@ -92,6 +92,11 @@ func (h *ProductHandler) Update(c *fiber.Ctx) error {
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 		}
+		// validate file
+		err = h.validator.ValidateImageFile(file)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+		}
 	}
 
 	// call service

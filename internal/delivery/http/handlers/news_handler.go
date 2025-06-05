@@ -40,6 +40,12 @@ func (h *NewsHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
+	// validate file
+	err = h.validator.ValidateImageFile(file)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+	}
+
 	// call service
 	result, err := h.newsService.Create(c.Context(), &request, file)
 	if err != nil {
@@ -89,6 +95,11 @@ func (h *NewsHandler) Update(c *fiber.Ctx) error {
 	// get file
 	file, err := c.FormFile("image")
 	if request.Image != nil {
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
+		}
+		// validate file
+		err = h.validator.ValidateImageFile(file)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 		}
