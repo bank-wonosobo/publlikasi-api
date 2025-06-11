@@ -33,3 +33,13 @@ type OfficeCreateReq struct {
 	MapLink     string `json:"map_link" form:"map_link" validate:"required"`
 	PhoneNumber string `json:"phone_number" form:"phone_number" validate:"required"`
 }
+
+type OfficeUpdateReq struct {
+	Name        string  `json:"name" form:"name" validate:"required"`
+	Address     string  `json:"address" form:"address" validate:"required"`
+	Latitude    string  `json:"latitude" form:"latitude" validate:"required"`
+	Longitude   string  `json:"longitude" form:"longitude" validate:"required"`
+	Image       *string `json:"image" form:"image"`
+	MapLink     string  `json:"map_link" form:"map_link" validate:"required"`
+	PhoneNumber string  `json:"phone_number" form:"phone_number" validate:"required"`
+}

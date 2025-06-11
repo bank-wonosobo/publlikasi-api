@@ -15,11 +15,46 @@ import (
 type OfficeService interface {
 	Create(ctx context.Context, req *dto.OfficeCreateReq, file *multipart.FileHeader) (*dto.OfficeResponse, error)
 	Index(ctx context.Context, params *dto.OfficeGetQueryParams) ([]dto.OfficeResponse, int64, error)
+	Update(ctx context.Context, request *dto.OfficeUpdateReq, file *multipart.FileHeader, id string) (*dto.OfficeResponse, error)
 }
 
 type officeService struct {
 	officeRepo repositories.OfficeRepository
 	s3         storage.S3Storage
+}
+
+// Update implements OfficeService.
+func (o *officeService) Update(ctx context.Context, request *dto.OfficeUpdateReq, file *multipart.FileHeader, id string) (*dto.OfficeResponse, error) {
+	// check news type id
+	office, err := o.officeRepo.FindByID(ctx, id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("office id tidak ditemukan")
+	}
+
+	// update report type
+	office.Address = request.Address
+	office.Latitude = request.Latitude
+	office.Longitude = request.Longitude
+	office.Name = request.Name
+	office.PhoneNumber = request.PhoneNumber
+	office.MapLink = request.MapLink
+	if file != nil {
+		// upload file
+		imageUrl, err := o.s3.UploadFileRename(file, "office/images/", nil)
+		if err != nil {
+			return nil, err
+		}
+		office.ImageUrl = imageUrl
+	}
+
+	result, err := o.officeRepo.Save(ctx, office)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	officeResponse := toOfficeResponse(*result)
+	return &officeResponse, nil
 }
 
 // Index implements OfficeService.

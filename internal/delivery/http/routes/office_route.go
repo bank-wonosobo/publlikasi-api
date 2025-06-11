@@ -14,4 +14,5 @@ func RegisterOfficeRouter(router fiber.Router, service services.OfficeService, v
 	admin := router.Group("/offices")
 	admin.Post("/", handler.Create)
 	admin.Get("/", handler.GetAll)
+	admin.Put("/:id", handler.Update)
 }
