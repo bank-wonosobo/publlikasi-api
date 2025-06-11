@@ -16,11 +16,28 @@ type OfficeService interface {
 	Create(ctx context.Context, req *dto.OfficeCreateReq, file *multipart.FileHeader) (*dto.OfficeResponse, error)
 	Index(ctx context.Context, params *dto.OfficeGetQueryParams) ([]dto.OfficeResponse, int64, error)
 	Update(ctx context.Context, request *dto.OfficeUpdateReq, file *multipart.FileHeader, id string) (*dto.OfficeResponse, error)
+	Delete(ctx context.Context, id string) error
 }
 
 type officeService struct {
 	officeRepo repositories.OfficeRepository
 	s3         storage.S3Storage
+}
+
+// Delete implements OfficeService.
+func (o *officeService) Delete(ctx context.Context, id string) error {
+	// get news  by id
+	news, err := o.officeRepo.FindByID(ctx, id)
+	if err != nil {
+		return errors.New("news tidak ditemukan")
+	}
+
+	err = o.officeRepo.Delete(ctx, news)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Update implements OfficeService.

@@ -22,7 +22,12 @@ type officeRepository struct {
 
 // Delete implements OfficeRepository.
 func (o *officeRepository) Delete(ctx context.Context, office *entities.Office) error {
-	panic("unimplemented")
+	err := o.db.WithContext(ctx).Delete(&office).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FindByID implements OfficeRepository.
