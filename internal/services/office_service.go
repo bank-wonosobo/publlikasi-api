@@ -14,6 +14,7 @@ import (
 
 type OfficeService interface {
 	Create(ctx context.Context, req *dto.OfficeCreateReq, file *multipart.FileHeader) (*dto.OfficeResponse, error)
+	Index(ctx context.Context, params *dto.OfficeGetQueryParams) ([]dto.OfficeResponse, int64, error)
 }
 
 type officeService struct {
@@ -21,12 +22,37 @@ type officeService struct {
 	s3         storage.S3Storage
 }
 
+// Index implements OfficeService.
+func (o *officeService) Index(ctx context.Context, params *dto.OfficeGetQueryParams) ([]dto.OfficeResponse, int64, error) {
+	// Set default values
+	if params.Page < 1 {
+		params.Page = 1
+	}
+	if params.Limit < 1 {
+		params.Limit = 10
+	}
+
+	// set offset
+	offset := (params.Page - 1) * params.Limit
+
+	// get all data with total
+	result, total, err := o.officeRepo.GetAll(ctx, params, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// return result
+	newsResponses := toOfficeResponses(result)
+
+	return newsResponses, total, nil
+}
+
 // Create implements OfficeService.
 func (o *officeService) Create(ctx context.Context, req *dto.OfficeCreateReq, file *multipart.FileHeader) (*dto.OfficeResponse, error) {
 	// check if title exist
 	_, err := o.officeRepo.FindByName(ctx, req.Name)
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.New("berita sudah ada")
+		return nil, errors.New("kantor sudah ada")
 	}
 
 	// upload file
@@ -78,4 +104,13 @@ func toOfficeResponse(office entities.Office) dto.OfficeResponse {
 	}
 
 	return result
+}
+
+func toOfficeResponses(offices []entities.Office) []dto.OfficeResponse {
+	var officeResponses []dto.OfficeResponse
+	for _, office := range offices {
+		officeResponses = append(officeResponses, toOfficeResponse(office))
+	}
+
+	return officeResponses
 }

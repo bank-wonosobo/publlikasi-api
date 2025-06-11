@@ -16,6 +16,14 @@ type OfficeResponse struct {
 	UpdateAt    time.Time `json:"updated_at"`
 }
 
+// params
+type OfficeGetQueryParams struct {
+	Key   string `query:"key"`
+	Page  int    `query:"page"`
+	Limit int    `query:"limit"`
+}
+
+// request
 type OfficeCreateReq struct {
 	Name        string `json:"name" form:"name" validate:"required"`
 	Address     string `json:"address" form:"address" validate:"required"`

@@ -30,7 +30,7 @@ func (p *productService) Update(ctx context.Context, req *dto.ProductUpdateReq, 
 	// check news type id
 	product, err := p.productRepo.FindByID(ctx, id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, errors.New("news id tidak ditemukan")
+		return nil, errors.New("product id tidak ditemukan")
 	}
 
 	// update report type
