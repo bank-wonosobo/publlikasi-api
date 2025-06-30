@@ -47,6 +47,8 @@ func main() {
 		entities.Product{},
 		entities.Banner{},
 		entities.Office{},
+		entities.ComplaintType{},
+		entities.Complaint{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -94,6 +96,7 @@ func main() {
 	productRepo := repositories.NewProduct(db)
 	bannerRepo := repositories.NewBanner(db)
 	officeRepo := repositories.NewOffice(db)
+	complaintTypeRepo := repositories.NewComplaintType(db)
 
 	// init service
 	reportTypeService := services.NewReportType(reportTypeRepo)
@@ -103,6 +106,7 @@ func main() {
 	productService := services.NewProduct(productRepo, s3Storage)
 	bannerService := services.NewBanner(bannerRepo, s3Storage)
 	officeSerice := services.NewOffice(officeRepo, s3Storage)
+	complaintTypeSerice := services.NewComplaintType(complaintTypeRepo)
 
 	// validator
 	validator := validator.NewValidator()
@@ -122,6 +126,7 @@ func main() {
 	routes.RegisterProductRouter(v1, productService, validator)
 	routes.RegisterBannerRouter(v1, bannerService, validator)
 	routes.RegisterOfficeRouter(v1, officeSerice, validator)
+	routes.RegisterComplaintTypeRouter(v1, complaintTypeSerice, validator)
 
 	// make server
 	log.Printf("Server running on port %s", cfg.App.Port)
