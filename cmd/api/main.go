@@ -97,6 +97,7 @@ func main() {
 	bannerRepo := repositories.NewBanner(db)
 	officeRepo := repositories.NewOffice(db)
 	complaintTypeRepo := repositories.NewComplaintType(db)
+	complaintRepo := repositories.NewComplaint(db)
 
 	// init service
 	reportTypeService := services.NewReportType(reportTypeRepo)
@@ -107,6 +108,7 @@ func main() {
 	bannerService := services.NewBanner(bannerRepo, s3Storage)
 	officeSerice := services.NewOffice(officeRepo, s3Storage)
 	complaintTypeSerice := services.NewComplaintType(complaintTypeRepo)
+	complaintService := services.NewComplaint(complaintRepo, s3Storage, complaintTypeRepo)
 
 	// validator
 	validator := validator.NewValidator()
@@ -127,6 +129,7 @@ func main() {
 	routes.RegisterBannerRouter(v1, bannerService, validator)
 	routes.RegisterOfficeRouter(v1, officeSerice, validator)
 	routes.RegisterComplaintTypeRouter(v1, complaintTypeSerice, validator)
+	routes.RegisterComplaintRouter(v1, complaintService, validator)
 
 	// make server
 	log.Printf("Server running on port %s", cfg.App.Port)

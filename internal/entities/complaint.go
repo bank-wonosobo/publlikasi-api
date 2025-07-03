@@ -1,27 +1,39 @@
 package entities
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"gorm.io/gorm"
+)
 
 type ComplaintStatus string
 
 const (
-	Pending TargetAudience = "pending"
-	Process TargetAudience = "process"
-	Done    TargetAudience = "done"
-	Reject  TargetAudience = "reject"
+	Pending ComplaintStatus = "pending"
+	Process ComplaintStatus = "process"
+	Done    ComplaintStatus = "done"
+	Reject  ComplaintStatus = "reject"
 )
 
 type Complaint struct {
-	ReportedName     string          `gorm:"reported_name"`
-	Email            string          `gorm:"email"`
-	InsidentLocation string          `gorm:"incident_location"`
-	InsidentDate     time.Time       `gorm:"incident_date"`
-	InsidentTime     time.Time       `gorm:"incident_date"`
-	Description      string          `gorm:"description"`
-	EvidenceUrl      string          `gorm:"evidence_url"`
-	ReporterName     string          `gorm:"reporter_name"`
-	ReporterPhone    string          `gorm:"reporter_phone"`
-	Status           ComplaintStatus `gorm:"status"`
+	ID               string `gorm:"primaryKey"`
+	ComplaintID      string `gorm:"unique"`
+	ReportedName     string
+	InsidentLocation string
+	InsidentTime     time.Time
+	Description      string
+	EvidenceUrl      string
+	ReporterName     string
+	ReporterEmail    string
+	ReporterPhone    string
+	Status           ComplaintStatus
 	ComplaintTypeID  uint
 	ComplaintType    ComplaintType
+}
+
+// BeforeCreate hook to set UUID
+func (c *Complaint) BeforeCreate(tx *gorm.DB) (err error) {
+	c.ID = uuid.NewString()
+	return nil
 }
