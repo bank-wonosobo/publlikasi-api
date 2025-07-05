@@ -1,7 +1,7 @@
 name: API Publication CI CD for Production
 on:
   pull_request:
-    branches: [staging]
+    branches: [prod]
 
 jobs:
   build:
