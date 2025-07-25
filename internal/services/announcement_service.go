@@ -195,13 +195,13 @@ func (a *announcementService) Archive(ctx context.Context, id string) (*dto.Anno
 
 // Detail implements AnnouncementService.
 func (a *announcementService) Detail(ctx context.Context, id string) (*dto.AnnouncementResponse, error) {
-	news, err := a.announcementRepo.FindByID(ctx, id)
+	announcement, err := a.announcementRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	// return result
-	announcementResult := toAnnouncementResponse(*news)
+	announcementResult := toAnnouncementResponse(*announcement)
 
 	return &announcementResult, nil
 }
