@@ -21,7 +21,7 @@ type Report struct {
 	Title        string `gorm:"varchar(255)"`
 	Description  string `gorm:"text"`
 	PeriodStart  time.Time
-	PeriodEnd    time.Time
+	PeriodEnd    *time.Time
 	Year         int
 	Quarter      *int
 	FileUrl      *string
