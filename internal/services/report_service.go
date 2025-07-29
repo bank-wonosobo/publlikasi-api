@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"mime/multipart"
+	"time"
 
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/delivery/http/dto"
 	"github.com/bank-wonosobo/publlikasi-api.git/internal/entities"
@@ -84,12 +85,21 @@ func (r *reportService) Create(ctx context.Context, req *dto.ReportCreateRequest
 		return nil, err
 	}
 
-	// create report type
+	// create report type period end
+	var periodEnd *time.Time
+	if req.PeriodEnd != nil {
+		t, err := time.Parse("2006-01-02", *req.PeriodEnd)
+		if err != nil {
+			return nil, errors.New("invalid period end format")
+		}
+		periodEnd = &t
+	}
+
 	report := entities.Report{
 		Title:       req.Title,
 		Description: req.Description,
 		PeriodStart: req.PeriodStart,
-		PeriodEnd:   req.PeriodEnd,
+		PeriodEnd:   periodEnd,
 		Year:        req.Year,
 		Quarter:     req.Quarter,
 		Version:     req.Version,

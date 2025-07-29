@@ -55,6 +55,10 @@ func (h *ReportHandler) Create(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
 	}
 
+	if *request.PeriodEnd == "" {
+		request.PeriodEnd = nil
+	}
+
 	// validate request
 	if err := h.validator.Validate(request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(dto.CreateReponseError(err.Error()))
