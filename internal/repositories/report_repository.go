@@ -41,7 +41,7 @@ func (r *reportRepository) GetAll(ctx context.Context, params *dto.ReportGetQuer
 	}
 
 	if params.Key != "" {
-		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("content ILIKE ?", "%"+params.Key+"%")
+		query = query.Where("title ILIKE ?", "%"+params.Key+"%").Or("description ILIKE ?", "%"+params.Key+"%")
 	}
 
 	query.Count(&total)
