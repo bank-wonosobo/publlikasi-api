@@ -13,11 +13,22 @@ type ComplaintRepository interface {
 	GetAll(ctx context.Context, params *dto.ComplaintGetQueryParams, offsite int) ([]entities.Complaint, int64, error)
 	Delete(ctx context.Context, news *entities.Complaint) error
 	FindByID(ctx context.Context, id string) (*entities.Complaint, error)
+	FindByComplaintID(ctx context.Context, complaintID string) (*entities.Complaint, error)
 	FindByTitle(ctx context.Context, title string) (*entities.Complaint, error)
 }
 
 type complaintRepository struct {
 	db *gorm.DB
+}
+
+// FindByComplaintID implements ComplaintRepository.
+func (c *complaintRepository) FindByComplaintID(ctx context.Context, complaintID string) (result *entities.Complaint, err error) {
+	err = c.db.WithContext(ctx).Preload("ComplaintType").Where("complaint_id = ?", complaintID).First(&result).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 // Delete implements ComplaintRepository.

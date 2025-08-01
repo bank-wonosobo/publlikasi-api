@@ -20,12 +20,26 @@ type ComplaintService interface {
 	Process(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error)
 	Done(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error)
 	Detail(ctx context.Context, id string) (*dto.ComplaintResponse, error)
+	DetailByComplaintID(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error)
 }
 
 type complaintService struct {
 	complaintRepo     repositories.ComplaintRepository
 	complaintTypeRepo repositories.ComplaintTypeRepository
 	s3                storage.S3Storage
+}
+
+// DetailByComplaintID implements ComplaintService.
+func (c *complaintService) DetailByComplaintID(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error) {
+	complaint, err := c.complaintRepo.FindByComplaintID(ctx, complaintID)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	complaintResult := toComplaintResponse(*complaint)
+
+	return &complaintResult, nil
 }
 
 // Done implements ComplaintService.
