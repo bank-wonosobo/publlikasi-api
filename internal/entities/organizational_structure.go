@@ -5,17 +5,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type Auction struct {
+type OrganizationalStructure struct {
 	*gorm.Model
 	ID          string `gorm:"primaryKey"`
 	Title       string
 	Description string
-	Link        string
-	ImageUrl    string
+	ImageUrl    *string
 }
 
 // BeforeCreate hook to set UUID
-func (b *Auction) BeforeCreate(tx *gorm.DB) (err error) {
-	b.ID = uuid.NewString()
+func (o *OrganizationalStructure) BeforeCreate(tx *gorm.DB) (err error) {
+	o.ID = uuid.NewString()
 	return nil
 }
