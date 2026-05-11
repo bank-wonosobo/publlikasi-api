@@ -19,12 +19,27 @@ type ComplaintService interface {
 	Create(ctx context.Context, req *dto.ComplaintCreateRequest, file *multipart.FileHeader) (*dto.ComplaintResponse, error)
 	Process(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error)
 	Done(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error)
+	Detail(ctx context.Context, id string) (*dto.ComplaintResponse, error)
+	DetailByComplaintID(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error)
 }
 
 type complaintService struct {
 	complaintRepo     repositories.ComplaintRepository
 	complaintTypeRepo repositories.ComplaintTypeRepository
 	s3                storage.S3Storage
+}
+
+// DetailByComplaintID implements ComplaintService.
+func (c *complaintService) DetailByComplaintID(ctx context.Context, complaintID string) (*dto.ComplaintResponse, error) {
+	complaint, err := c.complaintRepo.FindByComplaintID(ctx, complaintID)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	complaintResult := toComplaintResponse(*complaint)
+
+	return &complaintResult, nil
 }
 
 // Done implements ComplaintService.
@@ -130,6 +145,19 @@ func (c *complaintService) Create(ctx context.Context, req *dto.ComplaintCreateR
 	return &complaintResponse, nil
 }
 
+// Detail implements ComplaintService.
+func (c *complaintService) Detail(ctx context.Context, id string) (*dto.ComplaintResponse, error) {
+	complaint, err := c.complaintRepo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	// return result
+	complaintResult := toComplaintResponse(*complaint)
+
+	return &complaintResult, nil
+}
+
 func NewComplaint(complaintRepo repositories.ComplaintRepository,
 	s3 storage.S3Storage,
 	complaintTypeRepo repositories.ComplaintTypeRepository) ComplaintService {
@@ -169,7 +197,5 @@ func toComplaintResponses(complaints []entities.Complaint) []dto.ComplaintRespon
 }
 
 func generateComplaintID() string {
-	uniqueNumber := time.Now().UnixNano()
-	uniqueNumberStr := strconv.FormatInt(uniqueNumber, 10)
-	return "PGD" + uniqueNumberStr
+	return "PGD" + strconv.FormatInt(time.Now().Unix(), 10)
 }

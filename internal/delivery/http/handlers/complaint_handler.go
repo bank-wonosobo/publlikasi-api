@@ -99,3 +99,29 @@ func (h *ComplaintHandler) Done(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
 }
+
+func (h *ComplaintHandler) Detail(c *fiber.Ctx) error {
+	// get id
+	id := c.Params("id")
+
+	// call service
+	result, err := h.complaintService.Detail(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
+}
+
+func (h *ComplaintHandler) DetailByComplaintID(c *fiber.Ctx) error {
+	// get complaint ID
+	complaintID := c.Params("complaintID")
+
+	// call service
+	result, err := h.complaintService.DetailByComplaintID(c.Context(), complaintID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(dto.CreateReponseError(err.Error()))
+	}
+
+	return c.Status(fiber.StatusOK).JSON(dto.CreateReponseSuccess(result))
+}

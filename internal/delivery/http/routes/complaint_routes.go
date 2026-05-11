@@ -13,6 +13,8 @@ func RegisterComplaintRouter(router fiber.Router, service services.ComplaintServ
 	// public routes
 	complaint := router.Group("/complaints")
 	complaint.Post("/", handler.Create)
+	complaint.Get("/:id", handler.Detail)
+	complaint.Get("/:complaintID/id", handler.DetailByComplaintID)
 
 	// admin routes
 	admin := router.Group("admin/complaints")

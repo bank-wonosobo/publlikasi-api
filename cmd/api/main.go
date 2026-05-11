@@ -47,8 +47,12 @@ func main() {
 		entities.Product{},
 		entities.Banner{},
 		entities.Office{},
+		entities.Profile{},
+		entities.OrganizationalStructure{},
+		entities.VisionMission{},
 		entities.ComplaintType{},
 		entities.Complaint{},
+		entities.Auction{},
 	); err != nil {
 		log.Fatalf("Failed to migrate database: %v", err)
 	}
@@ -96,8 +100,12 @@ func main() {
 	productRepo := repositories.NewProduct(db)
 	bannerRepo := repositories.NewBanner(db)
 	officeRepo := repositories.NewOffice(db)
+	profileRepo := repositories.NewProfile(db)
+	organizationalStructureRepo := repositories.NewOrganizationalStructure(db)
+	visionMissionRepo := repositories.NewVisionMission(db)
 	complaintTypeRepo := repositories.NewComplaintType(db)
 	complaintRepo := repositories.NewComplaint(db)
+	auctionRepo := repositories.NewAuction(db)
 
 	// init service
 	reportTypeService := services.NewReportType(reportTypeRepo)
@@ -107,8 +115,12 @@ func main() {
 	productService := services.NewProduct(productRepo, s3Storage)
 	bannerService := services.NewBanner(bannerRepo, s3Storage)
 	officeSerice := services.NewOffice(officeRepo, s3Storage)
+	profileService := services.NewProfile(profileRepo, s3Storage)
+	organizationalStructureService := services.NewOrganizationalStructure(organizationalStructureRepo, s3Storage)
+	visionMissionService := services.NewVisionMission(visionMissionRepo, s3Storage)
 	complaintTypeSerice := services.NewComplaintType(complaintTypeRepo)
 	complaintService := services.NewComplaint(complaintRepo, s3Storage, complaintTypeRepo)
+	auctionService := services.NewAuction(auctionRepo, s3Storage)
 
 	// validator
 	validator := validator.NewValidator()
@@ -128,8 +140,12 @@ func main() {
 	routes.RegisterProductRouter(v1, productService, validator)
 	routes.RegisterBannerRouter(v1, bannerService, validator)
 	routes.RegisterOfficeRouter(v1, officeSerice, validator)
+	routes.RegisterProfileRouter(v1, profileService, validator)
+	routes.RegisterOrganizationalStructureRouter(v1, organizationalStructureService, validator)
+	routes.RegisterVisionMissionRouter(v1, visionMissionService, validator)
 	routes.RegisterComplaintTypeRouter(v1, complaintTypeSerice, validator)
 	routes.RegisterComplaintRouter(v1, complaintService, validator)
+	routes.RegisterAuctionRouter(v1, auctionService, validator)
 
 	// make server
 	log.Printf("Server running on port %s", cfg.App.Port)
