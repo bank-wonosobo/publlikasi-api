@@ -51,7 +51,7 @@ func (n *newsRepository) GetAll(ctx context.Context, params *dto.NewsGetQueryPar
 
 	query.Count(&total)
 
-	err = query.Limit(params.Limit).Offset(offsite).Find(&result).Error
+	err = query.Order("published_at DESC").Limit(params.Limit).Offset(offsite).Find(&result).Error
 	if err != nil {
 		return nil, 0, err
 	}

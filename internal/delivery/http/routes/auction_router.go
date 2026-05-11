@@ -11,14 +11,13 @@ func RegisterAuctionRouter(router fiber.Router, service services.AuctionService,
 	handler := handlers.NewAuction(service, validator)
 
 	// public routes
-	// auction := router.Group("/auctions")
-	// auction.Get("/", handler.Create)
+	auction := router.Group("/auctions")
+	auction.Get("/", handler.Index)
 
-	// // admin routes
+	// admin routes
 	admin := router.Group("admin/auctions")
 	admin.Post("/", handler.Create)
-	// admin.Get("/", handler.Index)
-	// admin.Put("/:id", handler.Update)
-	// admin.Delete("/:id", handler.Delete)
-	// admin.Put("/:id/activate", handler.Activate)
+	admin.Get("/", handler.Index)
+	admin.Put("/:id", handler.Update)
+	admin.Delete("/:id", handler.Delete)
 }
