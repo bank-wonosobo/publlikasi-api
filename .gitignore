@@ -10,3 +10,6 @@ deployment/.env
 # System Files
 .DS_Store
 Thumbs.db
+
+#claude
+.claude

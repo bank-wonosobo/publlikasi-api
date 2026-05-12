@@ -85,7 +85,11 @@ func (r *reportService) Create(ctx context.Context, req *dto.ReportCreateRequest
 		return nil, err
 	}
 
-	// create report type period end
+	periodStart, err := time.Parse("2006-01-02", req.PeriodStart)
+	if err != nil {
+		return nil, errors.New("invalid period start format")
+	}
+
 	var periodEnd *time.Time
 	if req.PeriodEnd != nil {
 		t, err := time.Parse("2006-01-02", *req.PeriodEnd)
@@ -98,7 +102,7 @@ func (r *reportService) Create(ctx context.Context, req *dto.ReportCreateRequest
 	report := entities.Report{
 		Title:       req.Title,
 		Description: req.Description,
-		PeriodStart: req.PeriodStart,
+		PeriodStart: periodStart,
 		PeriodEnd:   periodEnd,
 		Year:        req.Year,
 		Quarter:     req.Quarter,
