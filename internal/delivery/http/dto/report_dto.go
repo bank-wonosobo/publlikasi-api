@@ -4,15 +4,15 @@ import "time"
 
 // request
 type ReportCreateRequest struct {
-	Title       string    `json:"title" validate:"required" form:"title"`
-	Description string    `json:"description" validate:"required" form:"description"`
-	PeriodStart time.Time `json:"period_start" validate:"required" form:"period_start"`
-	PeriodEnd   *string   `json:"period_end" form:"period_end"`
-	Year        int       `json:"year" validate:"required" form:"year"`
-	Quarter     *int      `json:"quarter" form:"quarter"`
-	Version     string    `json:"version" validate:"required" form:"version"`
-	ReportType  string    `json:"report_type" validate:"required" form:"report_type"`
-	File        string    `json:"file" form:"file"`
+	Title       string  `json:"title" validate:"required" form:"title"`
+	Description string  `json:"description" validate:"required" form:"description"`
+	PeriodStart string  `json:"period_start" validate:"required" form:"period_start"`
+	PeriodEnd   *string `json:"period_end" form:"period_end"`
+	Year        int     `json:"year" validate:"required" form:"year"`
+	Quarter     *int    `json:"quarter" form:"quarter"`
+	Version     string  `json:"version" validate:"required" form:"version"`
+	ReportType  string  `json:"report_type" validate:"required" form:"report_type"`
+	File        string  `json:"file" form:"file"`
 }
 
 type ReportGetQueryParams struct {

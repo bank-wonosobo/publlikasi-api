@@ -59,7 +59,8 @@ func main() {
 
 	// init fiber app
 	app := fiber.New(fiber.Config{
-		AppName: cfg.App.Name,
+		AppName:   cfg.App.Name,
+		BodyLimit: 50 * 1024 * 1024, // 50MB
 	})
 
 	// middleware
